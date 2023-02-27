@@ -1,0 +1,21 @@
+INFO     Running translator.
+INFO     translator input: ['dom.pddl', 'ins.pddl']
+INFO     translator arguments: []
+INFO     translator time limit: 4.939s
+INFO     translator memory limit: 4096 MB
+INFO     callstring: /usr/bin/python /cygdrive/d/diandu/temporal-planning/fd_copy/builds/release64/bin/translate/translate.py dom.pddl ins.pddl
+time limit 4.94 -> (5, 6)
+Parsing...
+Parsing: [0.015s CPU, 0.005s wall-clock]
+Normalizing task... [0.000s CPU, 0.000s wall-clock]
+Instantiating...
+Generating Datalog program... [0.000s CPU, 0.001s wall-clock]
+Normalizing Datalog program...
+Normalizing Datalog program: [0.000s CPU, 0.010s wall-clock]
+Preparing model... [0.016s CPU, 0.004s wall-clock]
+Generated 269 rules.
+Computing model... Compiling problem: /cygdrive/d/diandu/temporal-planning/bin/compileSHE tdom.pddl tins.pddl > dom.pddl 2> ins.pddl
+('/cygdrive/d/diandu/temporal-planning', 'release64', 'seq-sat-lama-2011-ni', '5', 4096, 'sas_plan', 'dom.pddl', 'ins.pddl')
+Compiling temporal problem: python /cygdrive/d/diandu/temporal-planning/fd_copy/fast-downward.py --build release64 --alias seq-sat-lama-2011-ni --overall-time-limit 5s --overall-memory-limit 4096 --plan-file sas_plan dom.pddl ins.pddl
+Error: No solution to be converted into temporal has been found
+Error: No plan to validate was found
