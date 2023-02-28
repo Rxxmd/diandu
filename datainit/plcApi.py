@@ -106,12 +106,12 @@ def below_move(pole_num, slot_num, wait = False):
     ### 判断是否在下限
     
     slot_num = BELOW_MOVE_CODE + int(str(slot_num), 16)
-
-    while True:
-        data = get_hoist_up_down([pole_num])
-        data[pole_num] == 1
-        __write(pole_num, [slot_num], wait=wait)
-        return
+    __write(pole_num, [slot_num], wait=wait)
+    # while True:
+    #     data = get_hoist_up_down([pole_num])
+    #     if data[pole_num] == 1:
+    #         __write(pole_num, [slot_num], wait=wait)
+    #         return
 
 def top_move(pole_num, slot_num, wait = False):
     '''
@@ -124,12 +124,14 @@ def top_move(pole_num, slot_num, wait = False):
     '''
     ### 判断天车是否在上限
     data = get_hoist_up_down([pole_num])
+    
     slot_num = TOP_MOVE_CODE + int(str(slot_num), 16)
-    while True:
-        data = get_hoist_up_down([pole_num])
-        data[pole_num] == 1
-        __write(pole_num, [slot_num], wait=wait)
-        return 
+    __write(pole_num, [slot_num], wait=wait)
+    # while True:
+    #     data = get_hoist_up_down([pole_num])
+    #     if data[pole_num] == 3:
+    #         __write(pole_num, [slot_num], wait=wait)
+    #     return 
 
 def rise(pole_num, N, M):
 
@@ -142,13 +144,16 @@ def rise(pole_num, N, M):
     '''
 
     N = int(f'{N - 1}00', 16)
-    data = RISE_CODE + N - 1 + M
+    data = RISE_CODE + N + M
+    __write(pole_num, [data])
     # 判断天车是否在下限
-    while True:
-        up_down = get_hoist_up_down([pole_num])
-        up_down[pole_num] == 1
-        __write(pole_num, [data])
-        return
+    # while True:
+    #     up_down = get_hoist_up_down([pole_num])
+    #     import ipdb
+    #     ipdb.set_trace()
+    #     if up_down[pole_num] == 1:
+    #         __write(pole_num, [data])
+    #         return
 
 def down(pole_num, N, M):
     '''
@@ -159,13 +164,14 @@ def down(pole_num, N, M):
             M : 0 单飞巴， 1双升降第一支飞巴, 2双升降第二支飞巴 , 3双升降飞巴
     '''
     N = int(f'{N - 1}00', 16)
-    data = DOWN_CODE + N - 1 + M
+    data = DOWN_CODE + N  + M
+    __write(pole_num, [data])
     # 判断天车是否在上限
-    while True:
-        up_down = get_hoist_up_down([pole_num])
-        up_down[pole_num] == 1
-        __write(pole_num, [data])
-        return
+    # while True:
+    #     up_down = get_hoist_up_down([pole_num])
+    #     if up_down[pole_num] == 3:
+    #         __write(pole_num, [data])
+    #         return
 
 def wait(pole_num, time):
     '''
@@ -273,7 +279,6 @@ def __read(input, address, maxnum, is_bit):
         返回一个一input为key的dict
     '''
     data = _PLC.Read(address, maxnum, 0)
-    assert data[1] > 0, '读取数据失败'
     return convert_data(data, input, is_bit)
 
 def convert_data(data, input, is_bit):
@@ -290,7 +295,6 @@ def convert_data(data, input, is_bit):
             index = it // 16
             offset = it % 16
             status = (data[0][index] >> offset) & 1
-            assert it not in res, '重复值'
             res[it] = status
     else:
         for it in input:

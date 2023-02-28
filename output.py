@@ -1,81 +1,121 @@
 from collections import defaultdict
+import multiprocessing
+from queue import Queue
 from datainit import plcApi
+from threading import Thread
 import time
 import re
+from watchpoints import watch
 import ipdb
 
-class Output:
-    def __init__(self):
-        self.actions = []
-        self.poles = {}
-        self.time = 0
-        self.get_next = True    # 只有get next 为 True 的时候才可以从队列中获取数据
-
-    def __get_data_from_queue__(self, queue):
-        '''
-            从队列中获取数据 actions time poles
-            一次取一组
-        '''
-        if not queue.empty():
-            
-            data = queue.get()
-            if data['actions'] == []:
-                return None
-            self.actions = data['actions']
-            self.time = data['time']
-            self.poles = data['poles']
-            
-            self.get_next = False
-        return True 
+class Output(multiprocessing.Process):
+    def __init__(self, queue):
+        self.time = 0                                   ## 设置算法初始运行时间，用来辅助判断动作的执行时间
+        self.init_time = time.time()                    ## 记录现在的时间点， 用来辅助判断动作的执行时间
+        self.actions = []                               ## 接收从算法传过来的动作序列 
+        self.poles = {}                                 ## 接受从算法传过来的天车的对象，用来判断天车的上限移动和下限移动
+        self.actions_queue = defaultdict(Queue)         ## 用来存放每个天车的动作序列， 一个天车一个队列，是对self.actions 清洗过后的数据
+        self.ready_execute_actions = defaultdict(list)  ## 用来存放待执行的第一个动作
+        self.from_plan_queue = queue                    ## 和算法通信的队列
+                                                        ##
+    def __init_ready_execute_actions__(self):           ## 初始化self.ready_execute_actions
+        for pole in self.poles:                         ##            
+            self.ready_execute_actions[pole] = []       ##
+                                                        ##
+    def __get_data_from_queue__(self):                  ##
+        '''                                             ##
+            从队列中获取数据 actions time poles         ##
+            一次取一组                                  ##
+        '''                                             ##
+        if not self.from_plan_queue.empty():            ## 如果队列不为空就获取数据，一定要加这个判断，
+            data = self.from_plan_queue.get()           ## 否则程序会在这里阻塞，对空队列进行get会阻塞
+            if data['actions'] == []:                   ##
+                return None                             ## 如果没有动作序列，那就不需要取数据
+            self.actions = data['actions']              ##
+            self.time = data['time']                    ##
+            self.poles = data['poles']                  ##
+                                                        ##
+        return True                                     ##
 
     def __output_actions_to_plc__(self):
         '''
             对处理过的动作， 按照时间先后发送给plc 执行
         '''
 
-        filter_actions = self.__handle_actions__()
-        
-        
-        def _handle_below_move(action):
-            name, pole_num, slot_num, wait = action
+
+        '''
+            只有此函数会用到下面这些函数， 所以写成内联函数
+        '''
+        def _handle_below_move(start, action):
+            '''
+                执行下限移动的函数,如果是有wait=True表示需要等待 1,
+                并且满足时间要求才可以执行，否则就不需要等待直接写入数据
+            '''
+            _, pole_num, slot_num, wait = action
             if wait:
-                if start > self.time:
+                if start <= time.time() - self.init_time:
                     plcApi.below_move(pole_num, slot_num, wait)
+                    return True
             else:
-                    plcApi.below_move(pole_num, slot_num, wait)
+                plcApi.below_move(pole_num, slot_num, wait)
+                return True
+            return False
         
-        def _handle_top_move(action):
+        def _handle_top_move(start, action):
             name, pole_num, slot_num, wait = action
             if wait:
-                if start > self.time:
+                if start <= time.time() - self.init_time:
                     plcApi.top_move(pole_num, slot_num, wait)
+                    return True
             else:
                 plcApi.top_move(pole_num, slot_num, wait)
-
-        def _handle_rise(action):
-            pole_num = action[1]
-            plcApi.rise(pole_num, 1, 0)
+                return True
+            return False
         
-        def _handle_down(action):
-            pole_num = action[1]
-            plcApi.down(pole_num, 1, 0)
+        def _handle_rise(start, action):
+            if start <= time.time() - self.init_time:
+                pole_num = action[1]
+                plcApi.rise(pole_num, 1, 0)
+                return True
+            return False
         
-        for start in sorted(filter_actions):     # sort
-            actions = filter_actions[start]      # 时间一样的动作同时执行
+        def _handle_down(start, action):
+            if start <= time.time() - self.init_time:
+                pole_num = action[1]
+                plcApi.down(pole_num, 1, 0)
+                return True
+            return False
         
-            for action in actions: 
-                print(self.time, action) 
-                act = action[0]
-                if 'below-move' == act:
-                    _handle_below_move(action)
-                elif 'top-move' == act:
-                    _handle_top_move(action)
-                elif 'rise' == act:
-                    _handle_rise(action)
-                elif 'down' == act:
-                    _handle_down(action)
-        self.get_next = True
-
+        def _handle_action_queue(saction):
+            start, action = saction
+            act = action[0]
+            res = False
+            if 'below-move' in act:
+                res = _handle_below_move(start, action)
+            elif 'top-move' in  act:
+                res = _handle_top_move(start, action)
+            elif 'rise' == act:
+                res = _handle_rise(start, action)
+            elif 'down' == act:
+                res = _handle_down(start, action)
+            if res:
+                print(time.time() - self.init_time, saction)
+            return res
+        
+        for pole, al in self.ready_execute_actions.items():
+            pole_queue = self.actions_queue[pole]
+            if not al and not pole_queue.empty():
+                action = self.actions_queue[pole].get()
+                res = _handle_action_queue(action)
+                if not res:
+                    self.ready_execute_actions[pole].append(action)
+            elif al:
+                action = al[0]
+                res = _handle_action_queue(action)
+                if res:
+                    self.ready_execute_actions[pole].pop(0)
+            
+    
     def __handle_actions__(self):
         '''
             处理动作， 把动作变成如下形式
@@ -90,9 +130,8 @@ class Output:
         ''' 
 
         start_move_actions = {}  # 用来存放start move的字典
-        temp_actions = defaultdict(list)      # 存放清洗后的数据
         
-        def _filter_move_action(act,):
+        def _filter_move_action(act, start, start_move_actions):
             flag = False
             
             _, name, pole, cur_slot, des_slot, *_  = re.split(' |\(|\)',act)
@@ -103,54 +142,72 @@ class Output:
             slot_num = des_slot[4:]
             pole_num = self.poles[pole].order_num
             
+            if pole in start_move_actions:
+                start -= 2 
+                start_move_actions.pop(pole)
             
             if self.poles[pole].up_down == 1:
                 if flag:
-                    return (f'below-move-start', pole_num, slot_num, True)
+                    temp =  (f'below-move', pole_num, slot_num, True)
                 else:
-                    return (f'below-move-start', pole_num, slot_num, False)
+                    temp =  (f'below-move', pole_num, slot_num, False)
+           
             elif self.poles[pole].up_down == 3:
                 if flag:
-                    return (f'top-move-start', pole_num, slot_num, True)
+                    temp = (f'top-move', pole_num, slot_num, True)
                 else:
-                    return (f'top-move-start', pole_num, slot_num, False)
-            
-        def _filter_hang_action(act):
+                    temp =  (f'top-move', pole_num, slot_num, False)
+            self.actions_queue[pole].put((start, temp)) 
+        
+        def _filter_hang_action(act, start):
             _, name, pole, slot, product, _ = re.split(' |\(|\)',act)
             pole_num = int(self.poles[pole].order_num)
             if 'hangup' in name:
-                return ('rise', pole_num)
+                temp = ('rise', pole_num)
             elif 'hangoff' in name:
-                return ('down', pole_num)
+                temp = ('down', pole_num)
+                
+            self.actions_queue[pole].put((start, temp))
        
         def _handle_start_action(start, act, duration):
             _, _, pole, _ = re.split(' |\(|\)',act)
             start_move_actions[pole] = start + duration
 
         for start, act, duration in sorted(self.actions, key=lambda a: a[0]):
+            start += self.time
+
             if 'start-moving-pole' in act:
-                new_act = _handle_start_action(start, act, duration)
+                _handle_start_action(start, act, duration)
             elif 'move' in act:
-                _, name, pole, cur_slot, des_slot, *_  = re.split(' |\(|\)',act)
-                new_act = _filter_move_action(act)
-                
-                if pole in start_move_actions:
-                    start -= start_move_actions[pole] 
-                    start_move_actions.pop(pole)
+                _filter_move_action(act, start, start_move_actions)
             elif 'hang' in act:
-                new_act = _filter_hang_action(act)
-            if new_act is not None:
-                temp_actions[self.time + start].append(new_act)
+                _filter_hang_action(act, start)
+        self.actions = []
+        if len(self.ready_execute_actions) == 0 and len(self.poles) > 0:
+            self.__init_ready_execute_actions__()
     
-        return temp_actions
-    
-    def excute(self, queue):
+    def get_output_form_algorithm(self, queue):
+        '''
+            这个线程用来获取算法输出的数据
+        '''
         while True:
             if not queue.empty():
-                data = self.__get_data_from_queue__(queue)
-                if data is not None:
-                    self.__output_actions_to_plc__()
-                    # print(self.actions, self.time, self.poles)
+                self.__get_data_from_queue__(queue)
+                self.__handle_actions__()
+    
+    def send_output_to_plc(self):
+        '''
+            这个线程用来把结果输出到plc
+        '''
+        while True:
+            self.__output_actions_to_plc__()
+    
+    def run(self, queue):
+        t1 = Thread(target=Output.get_output_form_algorithm, args = (self, queue))
+        t2 = Thread(target=Output.send_output_to_plc, args = (self, ))
+        t1.start()
+        t2.start()
+        
 
 
 

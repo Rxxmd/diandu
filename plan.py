@@ -33,7 +33,7 @@ class Planning:
         self.init_tank_table()
         self.init_hoist_table()
 
-        self.output = open(_config.other_config['output_actions_path'], 'w')
+        # self.output = open(_config.other_config['output_actions_path'], 'w')
     '''
         预判模块
     '''
