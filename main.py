@@ -19,27 +19,33 @@ from datainit import plcApi
 from plan import Planning
 import _config
 from output import *
+TANKS = _config.slot_config['slots']
+HOIST = _config.pole_config['poles']
 # import subprocess
-# def is_all_hoist_below(data):
-#     if all([v == 1 for v in data.values()]):
-#         return True
+def is_all_hoist_below(hoists):
+    data = plcApi.get_hoist_up_down(hoists)
+    if all([v == 1 for v in data.values()]):
+        return True
     
-#     res = [k for k, v in data.items() if v != 1]
-#     print(f'天车 {res} 没有在下限')
-#     return False
+    res = [k for k, v in data.items() if v != 1]
+    print(f'天车 {res} 没有在下限')
+    return False
 
-# def before_start(hoists, tanks):
+def is_all_hoist_auto(hoists):
+    if not plcApi.get_hoist_auto(hoists):
+        print(f'天车不是自动状态')
+    else:
+        return True
+
+def check_hoist_status(hoists):
     
-#     while True: # 检查天车是否自动 和 天车都在下限
-#         up_down_hoists = PLC.get_hoist_up_down(hoists)
-#         if PLC.get_hoist_auto(hoists) and is_all_hoist_below(up_down_hoists):
-#             break    
-#         time.sleep(1)
-#     hoists_position = PLC.get_hoist_position(hoists)
-#     tank_status = PLC.get_tank_status(tanks)
+    while True: # 检查天车是否自动 和 天车都在下限
+        
+        if is_all_hoist_auto(hoists) and is_all_hoist_below(hoists):
+            return    
+        time.sleep(1)
+    
 
-#     return hoists_position, tank_status
-# before_start([],[])
 
 # try:
 #     plan = Planning(_config)
@@ -48,21 +54,20 @@ from output import *
 # finally:
 #     subprocess.run(f'rm *.pddl output output.sas plan.validation *sas_plan* ', shell=True)
     
-def output(queue):
-    out = Output()
-    out.excute(queue)
 
-def planing(queue):
+
+def planing(plan2out, out2plan):
     plan = Planning(_config)
-    plan.execute(queue)
+    plan.execute(plan2out, out2plan)
 
 
 from multiprocessing import Process, Queue
 if __name__ == '__main__': 
-    queue = Queue()
-    
-    p1 = Process(target = planing, args=(queue, ))
-    p2 = Output(queue)
+    check_hoist_status(HOIST)             # 检查天车在下限而且是自动状态才能开始规划
+    plan2out = Queue()              
+    out2plan = Queue()
+    p1 = Process(target = planing, args=(plan2out, out2plan ))
+    p2 = Output(plan2out, out2plan)
 
     p1.start()
     p2.start()

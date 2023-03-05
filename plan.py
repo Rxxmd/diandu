@@ -1,4 +1,5 @@
-from interval import Interval
+from collections import defaultdict, namedtuple
+import portion as P
 from datainit.global_var import Line, Parser, db, _config, PLC
 import re
 import copy
@@ -6,6 +7,8 @@ import subprocess
 import ipdb
 import utils
 import time
+
+PoleSpaceTimeRange = namedtuple('PoleSpaceTimeRange',['start_time', 'end_time', 'start_tank', 'end_tank'])
 class Planning:
     def __init__(self, config):
         self.init_time = time.time()
@@ -15,8 +18,10 @@ class Planning:
         self.parser = Parser
         self.Plc = PLC
         self.Line = Line
-
+        self.output_time = time.time() #用来同步output类的时间
+        self.poles_space_time_range = {}
         self.parser.state_to_tuple()
+
 
         self.pole_move_time   = config.pole_config['pole_moving_duration']
         self.pole_stop_time   = config.pole_config['pole_stop_duration']
@@ -25,139 +30,389 @@ class Planning:
         self.pole_unload_time = config.pole_config['pole_hangoff_duration']
         self.gear_move_time   = config.gear_config['gear_moving_duration']
         
+        self.pole_interval = 4
         self.tank_table      = {}
         self.hoist_table     = {}
-        self.tank_map_table  = {}
-        self.hoist_map_table = {}
-
+        self.tank_hoist_table = defaultdict(dict)
+        self.hoist_position_table = {}       
         self.init_tank_table()
         self.init_hoist_table()
+        self.init_hoist_position_table()
+        self.init_tank_hoist_table()
 
         # self.output = open(_config.other_config['output_actions_path'], 'w')
     '''
         预判模块
     '''
+
     def init_tank_table(self):
         for tank in self.Line.Slots.array:
 
             if tank not in self.tank_table:
             
-                self.tank_table[tank] = {}
+                self.tank_table[tank] = P.closed(-1, -1)
     
+    def init_hoist_position_table(self):
+        for k, v in self.Line.Poles.dict.items():
+            position = v.position
+            self.hoist_position_table[k] = {0: v.position}
+
     def init_hoist_table(self):
         for k, v in self.Line.Poles.dict.items():
-            self.hoist_table[k] = {}
+            self.hoist_table[k] = P.closed(-1, -1)
 
-    def match_tank(self, tanks, lower_bound, temp_tt, sum_t,):
-
-        for tank in tanks:
-            for k, v in temp_tt[tank].items():
-                upper = sum_t + lower_bound + self.pole_load_time + self.pole_unload_time 
-                if Interval(sum_t, upper).overlaps(v):
-                    return False
-        return tank, lower_bound
-
-    def match_pole(self, poles, tank, ntank, sum_t, time): 
-        for pole in poles:
-            # if pole.is_gear:
-            #     ts = sum_t
-            #     te = sum_t + time + 20
-            # else:
-            if tank == pole.position:
-                move_time = 0
-            else:
-                move_time = abs(pole.position - tank) * self.pole_move_time - self.pole_stop_time - self.pole_start_time
-            ts = sum_t + time - move_time
+    def init_tank_hoist_table(self):
+        for k, v in self.Line.Poles.dict.items():
             
-            te = sum_t + time + self.pole_unload_time + self.pole_load_time + abs(tank - ntank) + self.pole_stop_time + self.pole_start_time 
-            
-            if ts < 0:
-                ts = 0
-            for k, v in self.hoist_table[pole.name].items():
-                if Interval(ts, te).overlaps(v) and Interval(ts, te) != v:
-                    try:
-                        intersection = Interval(ts, te) & v
-                    except Exception as e:
-                        print(e)
-                        ipdb.set_trace()
-                    if intersection.upper_bound - intersection.lower_bound:
-                        pole.position = ntank
-                        return pole, ts, te
-                    
-                    return False
-            pole.position = ntank
-
-            return pole, ts, te
+            for tank in self.Line.Slots.array:
+                
+                self.tank_hoist_table[k][tank] = P.open(-1, -1)
     
+    def gen_hoist_tank_table(self, product):
+        pole_interval = -(-self.pole_interval // 2) 
+        tank_table = product.tank_table
+        hoist_table = product.hoist_table
+        init_positiion = product.position
+        for stage, data in hoist_table.items():
+            if not data:
+                continue
+            # 确定当前槽位，下一个槽位，当前的开始时间，到达下一个槽位的结束时间
+            if stage == product.stage:
+                cur_tank = init_positiion
+            else:
+                cur_tank = tank_table[stage - 1][1]
+            pole = data[1]
+            start_time = data[0].lower
+            next_tank = tank_table[stage][1]
+            end_time = data[0].upper
+            cur_tanks = [tank for tank in range(cur_tank - pole_interval, cur_tank + pole_interval + 1)]
+            cur_tanks = list(set(cur_tanks) & set(self.Line.Slots.array))
+            next_tanks = [tank for tank in range(next_tank - pole_interval, next_tank + pole_interval + 1)]
+            next_tanks = list(set(next_tanks) & set(self.Line.Slots.array))
+            for tank in cur_tanks:
+                self.tank_hoist_table[pole][tank] |= P.open(start_time - self.pole_stop_time - self.pole_move_time, start_time + self.pole_start_time + self.pole_move_time + self.pole_load_time)
+            for tank in next_tanks:
+                self.tank_hoist_table[pole][tank] |= P.open(end_time - self.pole_stop_time - self.pole_move_time - self.pole_unload_time, end_time + self.pole_start_time + self.pole_move_time)
+    
+    def gen_tank_table(self, product):
+        self.init_tank_table()
+        self.init_hoist_table()
+        for k, v in self.products.items():
+            if k != product.name:
+                for stage, data in v.tank_table:
+                    tank, interval = data
+                    self.tank_table[tank] |= interval
+                
+                for stage, data in v.hoist_table:
+                    hoist, interval = data
+                    self.hoist_table[hoist] |= interval
+   
+    def match_pole_tank(self, start_tank, goal_tank, sum_t, temp_ht):
+        pole_interval = -(-self.pole_interval // 2)
+        pole_start_time = self.pole_start_time
+        pole_hangup_time = self.pole_load_time
+        if start_tank < goal_tank:
+            exe_tank = range(start_tank, goal_tank + 1)
+            iter_tank = range(start_tank - pole_interval, goal_tank + pole_interval + 1)
+        else:
+            exe_tank = range(goal_tank, start_tank + 1)
+            iter_tank = range(start_tank + pole_interval, goal_tank - pole_interval - 1, -1)
+        end_t = sum_t
+        for tank in iter_tank:
+            if tank in self.Line.Slots.array:
+                ocupy_time = 0
+
+                if start_tank != goal_tank:
+                    # 产看自己的邻居
+                    neibor = set(range(tank - pole_interval, tank + pole_interval + 1)) & set(exe_tank)
+                    neibor = len(neibor)
+                    ocupy_time += neibor
+                    # 是否在start组内
+                    start_group = range(start_tank - pole_interval, start_tank + pole_interval + 1)
+                    if tank in start_group:
+                            ocupy_time += pole_start_time
+                # 是否在end 组内
+                end_group = range(goal_tank - pole_interval, goal_tank + pole_interval + 1)
+                if tank in end_group:
+                    if start_tank != goal_tank:
+                        ocupy_time += pole_start_time
+                    ocupy_time += pole_hangup_time
+                tank_distance = abs(tank - start_tank) - pole_interval
+                if tank_distance < 0:
+                    tank_distance = 0
+                start_t = int(sum_t + tank_distance)
+                end_t = start_t + ocupy_time if start_t + ocupy_time > end_t else end_t
+                intersection = set(temp_ht[tank]) & set(range(start_t, start_t + ocupy_time))
+                if len(intersection) > 1:
+                    # print(start_t, start_t + ocupy_time, tank,'confilict')
+                    return False
+                else:
+                    temp_ht[tank] = temp_ht[tank] | set(range(start_t, start_t + ocupy_time))
+        return temp_ht, end_t
+
+    def get_pole_move_time(self, pole_position, tank, next_tank):
+        empty_move_time = self.pole_start_time + self.pole_stop_time + abs(pole_position - tank)
+        if pole_position == tank:
+            empty_move_time = 0
+        load_move_time = self.pole_start_time + self.pole_stop_time + abs(next_tank - tank) + self.pole_load_time + self.pole_unload_time
+        
+        return empty_move_time, load_move_time
+
+    def get_pole_position(self, cur_time, pole, hoist_position_table):
+        # 二分查找pole_position
+        pole_name = pole.name
+        table = hoist_position_table[pole_name]
+        if len(table) == 1:
+            return tuple(table.values())[0]
+        if cur_time in table:
+            return table[cur_time]
+        
+        times = sorted(table.keys())
+        left = 0 
+        right = len(times) - 1
+        while(left <= right):
+            mid = (left + right) // 2
+            if times[mid] == cur_time:
+                return table[times[mid]]
+            if times[mid] > cur_time:
+                right = mid - 1
+            else:
+                left = mid + 1
+        
+
+        if times[mid] < cur_time:
+            if mid == len(times) - 1:
+                return table[times[mid]]
+            else:
+                return table[times[mid - 1]]
+        else:
+            return table[times[mid + 1]]
+
+    def get_available_pole_interval(self, pole_interval, tank, next_tank, pole, empty_move_time, load_move_time):
+        pole_dis = -(-self.pole_interval // 2) 
+        # 确定tank周围的所有tanks
+        start_tanks = [tank for tank in range(tank - pole_dis, tank + pole_dis + 1)]
+        start_tanks = list(set(start_tanks) & set(self.Line.Slots.array))
+        end_tanks = [tank for tank in range(next_tank - pole_dis, next_tank + pole_dis + 1)]
+        end_tanks = list(set(end_tanks) & set(self.Line.Slots.array))
+        # 获取当前tank和周围tank 可用的pole interval 的交集 
+        start_tank_available_intervals = pole_interval
+        for kp in self.Line.Poles.dict.keys():
+            if kp != pole.name:
+                for tank in start_tanks:
+                    start_tank_available_intervals &= ~self.tank_hoist_table[kp][tank]
+        # 用starttank available interval - empty_time就是start tank 的可用区间
+        temp = P.open(0, 0)
+        for stai in start_tank_available_intervals:
+            temp |= P.open(stai.lower - empty_move_time, stai.upper)
+        
+        start_tank_available_intervals = temp & pole_interval
+
+        # 获取next tank 和周围tank 的pole interval 交集
+        
+        end_tank_available_intervals = pole_interval
+        for kp in self.Line.Poles.dict.keys():
+            if kp != pole.name:
+                for tank in end_tanks:
+                    end_tank_available_intervals &= ~self.tank_hoist_table[kp][tank]
+        temp = P.open(0, 0)
+        for etai in end_tank_available_intervals:
+            temp |= P.open(etai.lower - load_move_time, etai.upper)
+        end_tank_available_intervals = temp & pole_interval
+
+        return start_tank_available_intervals & end_tank_available_intervals
+        
+    def update_tank_table(self, tank_table):
+        for k, v in tank_table.items():
+            tank = v[1]
+            self.tank_table[tank] |= v[0]
+
+    def update_hoist_table(self, hoist_table):
+        for k, v in hoist_table.items():
+            if v:
+                pole = v[1]
+                self.hoist_table[pole] |= v[0]
+        
+    def update_hoist_position_table(self, hoist_position_table):
+        for k, v in hoist_position_table.items():
+            self.hoist_position_table[k].update(v)
+        pass
+
     def constraint_table(self, product):
         poles = copy.deepcopy(self.Line.Poles.dict)
-        temp_tt = copy.deepcopy(self.tank_table)
-        temp_pt = copy.deepcopy(self.hoist_table)
-        temp_tt_map = copy.deepcopy(self.tank_map_table)
-        temp_pt_map = copy.deepcopy(self.hoist_map_table)
-        sum_t = self.time
-        for stage in range(product.stage, max(product.processes) + 1):
-            process = product.processes[stage]
-            lower_bound, upper_bound, tanks = process.lower_bound, process.upper_bound, process.tanks
-            if (stage + 1) in product.processes: 
-                next_tank = product.processes[stage + 1].tanks[-1]    # 获取下一个槽位
-            else:
-                next_tank = self.Line.Slots.blanking[-1]
-            avai_poles = [v for k, v in poles.items() if tanks[0] in v.interval and next_tank in v.interval]  # 选出物品在当前槽位到目标槽位可用的天车
-            
-            res = self.match_tank(tanks, lower_bound, temp_tt, sum_t)  
-            if not res:
-                return False
-            
-            slc_tank, res_t = res
-
-            res = self.match_pole(avai_poles, slc_tank, next_tank, sum_t, res_t) 
-            if not res:
-                return False
-
-            pole, ts, te = res
-
+        tank_ocupy_table = copy.deepcopy(self.tank_table)
+        hoist_ocupy_table = copy.deepcopy(self.hoist_table)
+        hoist_position_table = copy.deepcopy(self.hoist_position_table)
         
-            if set(tanks).issubset(self.Line.Slots.stocking) and product.stage == 0:    
-                temp_pt[pole.name][(product.name, product.stage)] = Interval(ts, te)
-                temp_pt_map[(product.name, product.stage)] = pole.name
+        cur_time = self.time
+        cur_stage = product.stage
+        max_stage = max(product.processes) + 1
+        tank_result = {stage:False for stage in range(cur_stage, max_stage)}    # 记录每个槽位的最优解
+        hoist_result = {stage:False for stage in range(cur_stage, max_stage)}   # 记录每个天车的最优解
+        hoist_position_result = {k:{} for k,v in poles.items()}
+        tank_flag = {stage:P.open(0, 0) for stage in range(cur_stage, max_stage)}  
+        process = product.processes
+        max_start = cur_time + process[cur_stage].upper_bound
+        cur_tank = product.position
+        next_tanks = process[cur_stage + 1].tanks
+        pole = [v for k, v in poles.items() if product.position in v.interval and next_tanks[-1] in v.interval][0]
+        pole_position = self.get_pole_position(cur_time, pole, hoist_position_table)
+        first_empty_move_time, _ = self.get_pole_move_time(pole_position, product.position, next_tanks[-1])
+        start_time = cur_time + first_empty_move_time
+        max_start = cur_time + process[cur_stage].upper_bound + first_empty_move_time
+        def predict(stage, start_time, end_time, max_start, tank, hoist_position_table):
+            hoist_pos_table = copy.deepcopy(hoist_position_table)
+            nonlocal tank_result
+            nonlocal tank_flag
+            nonlocal hoist_result
+            nonlocal hoist_position_result
+            """
+            stage: 当前工艺阶段
+            start_time: 当前工艺阶段开始时间
+            end_time: 当前工艺阶段结束时间
+            max_start: 可以使用的最晚开始时间
+            tank: 当前使用的tank编号  
+            """
+            if stage >= max_stage - 1:  # 到达最后一个工艺阶段
+                #如果找到更优的解， 清空当前解
+                if not tank_flag[stage] or (tank_flag[stage] and tank_result[stage][0].lower > start_time):
+                    tank_result = {stage:False for stage in range(cur_stage, max_stage)}    # 清空解
+                    hoist_result = {stage:False for stage in range(cur_stage, max_stage)}
+                    hoist_position_result = {k:{} for k,v in poles.items()}
+                    tank_flag = {stage:P.open(0, 0) for stage in range(cur_stage, max_stage)}  
+                    tank_result[stage] = (P.closed(start_time, start_time), tank)  # 记录最优解
+                    tank_flag[stage] = True  # 标记tank已经被占用
+                    return start_time, tank  # 返回最晚完成时间和使用的tank编号
+                else:
+                    return None
+            if tank_flag[stage]:
+                return None
+            lb, ub = process[stage].lower_bound,  process[stage].upper_bound, # 当前阶段的要求
+            next_tanks = process[stage + 1].tanks
+            pole = [v for k, v in poles.items() if tank in v.interval and next_tanks[-1] in v.interval][0]
+            for ntank in next_tanks:       # 遍历下一个工艺阶段涉及的所有tank
+                min_end = start_time + lb  # 完成此阶段所需的最早结束时间
+                max_end = end_time + ub    # 完成此阶段所需的最晚结束时间
+                
+                pole_position = self.get_pole_position(start_time, pole, hoist_pos_table)
+                empty_move_time, load_move_time = self.get_pole_move_time(pole_position, tank, ntank)
+                # 计算可用的pole和tank时间区间
+                tank_interval = P.open(start_time, max_end)               # tank可用时间区间
+                pole_interval = P.open(min_end - empty_move_time, max_end + load_move_time)  # 
+                
 
-                product.stage += 1
-                sum_t += (te - ts) 
+                # 计算pole的实际可用时间区间（排除了已经被占用的时间段）。
+                available_pole_interval = pole_interval - hoist_ocupy_table[pole.name]
                 
-            else:  
+                available_pole_interval = self.get_available_pole_interval(pole_interval, tank, ntank, pole, empty_move_time, load_move_time)
+                # 计算当前可用tank的时间区间（排除了已经被占用的时间段和超出lb和ub范围的时间段。
+                available_tank_interval = tank_interval - tank_ocupy_table[ntank]
                 
-                temp_tt[slc_tank][(product.name, product.stage)] = Interval(sum_t, sum_t + res_t)
-                temp_tt_map[(product.name, product.stage)] = slc_tank
+                if not available_tank_interval or not available_pole_interval:
+                    return None
+                available_interval = available_tank_interval & P.open(available_pole_interval.lower - lb,  available_pole_interval.upper - load_move_time)
+                if available_interval:
+                    # 如果当前可用tank的时间区间非空，则尝试选择一个tank并递归搜索下一个stage。
+                    for ai in available_interval:
+                        hoist_pos_table[pole.name][ai.lower] = tank
+                        # 遍历当前可用tank的时间区间。
+               
+                        if ai.upper - ai.lower >= lb and ai.lower <= max_start:
+                            # 如果当前tank的可用时间区间能够满足当前stage的要求，则继续搜索下一个stage。
+                            if tank_flag[stage] and tank_result[stage].lower < ai.lower:
+                                # 如果当前tank在之前的stage已经被使用过，并且该使用时间比当前可用时间段的开始时间还晚，则跳过。
+                                continue
+                            pole_position = tank
+                            res = predict(stage + 1, ai.lower + lb + load_move_time, ai.upper, ai.upper, ntank, hoist_pos_table) 
+                            if res:
+                                if not (P.open(ai.lower, res[0] - load_move_time) & tank_ocupy_table[ntank]):
+
+                                    best_solution = (P.closed(ai.lower, res[0] - load_move_time), ntank)
+                                    tank_flag[stage] = True
+                                    tank_result[stage] = best_solution
+                                    hoist_result[stage] = (P.open(res[0] - empty_move_time - load_move_time, res[0]), pole.name)
+                                    hoist_position_result[pole.name][res[0] - load_move_time] = tank
+                                    hoist_position_result[pole.name][res[0]] = ntank
+
+                                    return best_solution[0].lower, best_solution[1]
+            return None
+        res = predict(cur_stage, start_time, start_time, max_start,  cur_tank, hoist_position_table)
+
+        if res:
+            product.tank_table = tank_result
+            product.hoist_table = hoist_result
+            self.update_hoist_position_table(hoist_position_result)
+            self.update_hoist_table(hoist_result)
+            self.update_tank_table(tank_result)
+            self.gen_hoist_tank_table(product)
+            return product
+        return False
+
+
+
+
+
+
+
+
+
+        #     res = self.match_tank(tanks, lower_bound, temp_tt, sum_t)  
+        #     if not res:
+        #         return False
             
-                temp_pt[pole.name][(product.name, product.stage)] = Interval(ts, te)
-                temp_pt_map[(product.name, product.stage)] = pole.name
+        #     slc_tank, res_t = res
+            
+        #     res = self.match_pole(avai_poles, slc_tank, next_tank, sum_t, res_t) 
+        #     if not res:
+        #         return False
+            
+        #     pole, ts, te = res
+        #     if sum_t + res_t <= ts:
                 
-                product.stage += 1
-                sum_t += (te - ts + res_t)
-                   
-        self.tank_table = temp_tt
-        self.hoist_table = temp_pt
-        self.tank_map_table = temp_tt_map
-        self.hoist_map_table = temp_pt_map
+        #         ipdb.set_trace()
+        #     res = self.match_pole_tank(pole.position, slc_tank, ts, temp_ht)
+        #     if not res:
+        #         return False
+        #     temp_ht, end_t = res
+            
+        #     res = self.match_pole_tank(slc_tank, next_tank,end_t, temp_ht )
+        #     if not res:
+        #         return False
+        #     temp_ht, end_t = res
+        #     pole.position = next_tank
+        #     if set(tanks).issubset(self.Line.Slots.stocking) and product.stage == 0:    
+        #         product.hoist_table[stage] = (pole.name, P.closed(ts, te))
+        #         temp_pt[pole.name] = temp_pt[pole.name] | P.closed(ts, te)
 
-        return True
+        #         product.stage += 1
+        #         sum_t += (te - ts)
+                
+        #     else:  
+        #         product.tank_table[stage] = (slc_tank, P.closed(sum_t, sum_t + res_t)) 
+        #         temp_tt[slc_tank] |= P.closed(sum_t, sum_t + res_t)
+        #         product.hoist_table[stage] = (pole.name, P.closed(ts, te)) 
+        #         temp_pt[pole.name] |= P.closed(ts, te)
+                
+        #         product.stage += 1
+        #         sum_t += (te - ts + res_t)
+                   
+        # self.tank_table = temp_tt
+        # self.hoist_table = temp_pt
+        # self.hoist_tank_table = temp_ht
+        # return True
     
     def add_product(self):
         for craft, products in self.Line.Products.dict.items():
-            
             if not products:
-                
                 continue
             
             product = copy.deepcopy(products[0])
-            if self.constraint_table(product):
+            product =  self.constraint_table(product)
+            if product:
                 name = self.Line.Products.dict[craft][0].name
-                
-                self.products[name] = self.Line.Products.dict[craft][0]
+                self.products[name] = product
 
                 self.Line.Products.dict[craft].pop(0)
-
                 return True
 
     '''
@@ -191,7 +446,6 @@ class Planning:
         poles = list(poles.values())
         poles = sorted(poles, key=lambda pole: pole.order_num)
         poles.reverse()
-
         self.Line.Slots.set_blanking_slot_empty()
         exe_poles = self.get_exe_poles()
         for pole in poles:
@@ -223,7 +477,6 @@ class Planning:
                 goal.append(f'(pole_have_things {pole.name} {pole.select})')
 
             elif not pole.select and not pole.product and pole.stopping:
-                
                 product = self.select_product(pole)
 
                 if product:
@@ -241,53 +494,55 @@ class Planning:
         goal = gear_goal + pole_goal
         return goal
 
+    def add_poles_space_time_range(self, goals):
+        for goal in goals:
+            product = re.findall(r'p\d+', goal)[0]
+            product = self.products[product]
+            move_time = 0
+            if 'pole_position' in goal: 
+                pole = re.findall(r'pole\d+', goal)[0]
+                pole = self.Line.Poles.dict[pole]
+                if pole.position != product.position:
+                    if pole.stopping:
+                        move_time = self.pole_start_time + self.pole_stop_time + abs(pole.position - product.position)
+                    else:
+                        move_time = self.pole_stop_time + abs(pole.position - product.position)
+            elif 'product_at' in goal:
+                slot = re.findall(r'slot\d+', goal)[0]
+                pole = product.pole
+                pole = self.Line.Poles.dict[pole]
+                if pole.position != product.position:
+                    if pole.stopping:
+                        move_time = self.pole_start_time + self.pole_stop_time + abs(pole.position - product.position)
+                    else:
+                        move_time = self.pole_stop_time + abs(pole.position - product.position)
+            if move_time > 0:        
+                pstr = PoleSpaceTimeRange(self.time, self.time + move_time, pole.position, product.position)
+                self.poles_space_time_range[pole.name] = pstr
+    
     def select_product(self, pole):
        
-        min_t = 1000000000
+        min_t = 1000000
         gproduct = None
         gtank = None
-  
         for k ,v in self.products.items():
-    
-            lower_bound = v.processes[v.stage].lower_bound
-            
-            move_time = abs(pole.position - v.position) * self.pole_move_time
-            
-            if pole.position != v.position:
-                move_time += self.pole_start_time + self.pole_stop_time
-            
-            if move_time >= lower_bound and v.position == v.next_slot:
-                if (k, v.stage + 1) in self.tank_map_table:
-                    tank = self.tank_map_table[(k, v.stage + 1)]
-                else:
-                    tank = v.processes[v.stage].tanks[-1]
-                if (k, v.stage) not in self.hoist_map_table:
-                    continue
-                try:
-                    hoist = self.hoist_map_table[(k, v.stage)]
-                except:
-                    ipdb.set_trace()
+            if v.hoist_table[v.stage] and  v.hoist_table[v.stage][0].lower <= self.time and v.position == v.next_slot:
+                
+                tank = v.tank_table[v.stage][1]
+                hoist = v.hoist_table[v.stage][1]
+                
                 if hoist == pole.name and tank in self.Line.Slots.empty:
-                    tl = self.hoist_table[pole.name][(k, v.stage)].lower_bound
+                    tl = v.hoist_table[v.stage][0].lower
                     if min_t > tl:
                         gproduct = v
                         min_t = tl
                         gtank = tank
-        
-        
-        
+            
         if gproduct:
-            # if abs(min_t - self.time) > self.pole_load_time + self.pole_unload_time :
-            #     self.update_constraint_table(gproduct.name, gproduct.stage, min_t)
-            if (gproduct.name,gproduct.stage) in self.tank_table[gtank]:
-                self.tank_table[gtank].pop((gproduct.name,gproduct.stage))
-                self.tank_map_table.pop((gproduct.name,gproduct.stage))
-            if (gproduct.name,gproduct.stage - 1) in self.hoist_table:
-                self.hoisttable[pole.name].pop((gproduct.name,gproduct.stage - 1))
-            if (gproduct.name,gproduct.stage - 1) in self.hoist_map_table:
-                self.hoist_map_table.pop((gproduct.name,gproduct.stage - 1))
-            self.products[gproduct.name].stage += 1
+            
             self.products[gproduct.name].next_slot = gtank
+
+            self.products[gproduct.name].stage += 1
 
             self.Line.Slots.empty.remove(gtank)
             
@@ -493,16 +748,11 @@ class Planning:
                 output_actions.append((time, act_name, duration))
             
             if time <= min_end_time and ('hangup' in act_name or 'move-gear-equip' in act_name):
-                self.products[product].processes.pop(cur_stage - 1)
-                
-                self.products[product].available = True 
+                pass
 
             if time <= min_end_time and ('hangoff' in act_name or 'move-gear-equip' in act_name):
 
-                assert self.products[product].available, '产品没置为available'
-                self.products[product].available = False
-                self.products[product].processes[cur_stage].lower_bound += (time + duration)
-                self.products[product].processes[cur_stage].upper_bound += (time + duration)
+                self.products[product].process_start_time = self.time + time + duration
                     
         actions_name.extend(replace)
 
@@ -511,12 +761,7 @@ class Planning:
         actions_name = list(set(actions_name) - set(delete))
 
         output_actions = list(set(output_actions) - set(delete))
-        
-        for k, v in self.products.items():
             
-            if not v.available:
-                self.products[k].processes[v.stage].lower_bound  -= min_end_time
-                self.products[k].processes[v.stage].upper_bound -= min_end_time
 
         return output_actions
 
@@ -558,14 +803,12 @@ class Planning:
     def del_end_products(self):
         # 删除已经执行完最后一道 craft 的 product
         delete = {}
-
         for k, v in self.products.items():
-            if len(v.processes) == 1 and  v.position in self.Line.Slots.blanking:
+            if v.stage == max(v.processes) and  v.position in self.Line.Slots.blanking:
                 print(self.time)
                 delete[k] = v
 
         self.products = dict(self.products.items() - delete.items())
-
 
     '''
         更新状态
@@ -595,10 +838,12 @@ class Planning:
     def update_state(self, actions_name, min_end_time, stop_time):
         
         self.add_action(actions_name, min_end_time)
-                    
+        
         for time, act, status in sorted(self.Actions, key = lambda action: action[0]):
                 if time <= self.time + min_end_time:
-                    # print(time + self.time, act.name, act.parameters)
+                    with open('../data/211/actions.txt') as f:
+
+                        print(time, act.name, act.parameters, file=f)
                     self.parser.state = utils.apply(act, status, self.parser.state)
                     
                     if 'hangoff' in act.name or 'hangup' in act.name or 'move-gear-equip' in act.name or 'start-moving' in act.name: 
@@ -729,19 +974,24 @@ class Planning:
     '''
         总的plan
     '''
-    def execute(self, queue):
-        
+    def execute(self, plan2out, out2plan):
         self.Line.Products.add_product(self.parser, 1, 'craft211', db)
+        self.Line.Products.add_product(self.parser, 1, 'craft211', db)
+        self.Line.Products.add_product(self.parser, 1, 'craft211', db)
+        self.Line.Products.add_product(self.parser, 1, 'craft211', db)
+        self.Line.Products.add_product(self.parser, 1, 'craft211', db)
+        self.Line.Products.add_product(self.parser, 1, 'craft211', db)
+        self.Line.Products.add_product(self.parser, 1, 'craft211', db)
+        Actual_time = {}
         while True:
-          
+            
             self.add_product()
 
-            goal = self.gen_goal()  
+            goal = self.gen_goal() 
 
             utils.state2pddl(self.parser, goal, _config.other_config['new_problem_path'])
             if goal:
                 subprocess.run(f'D:/cygwin64/bin/python2.7  {_config.other_config["planning_path"]} she {_config.domain_config["domain_path"]} {_config.other_config["new_problem_path"]} --no-iterated  --time 5 > console_output.txt', shell=True)
-            
             actions_name = utils.parser_sas(goal)   
             stop_time = self.parser_stop_time(actions_name) 
 
@@ -751,9 +1001,10 @@ class Planning:
 
             actions_name = self.change_move_time(actions_name, stop_time, min_end_time)
             
-            actions_name = self.update_products(actions_name, min_end_time)
+            self.update_products(actions_name, min_end_time)
+            
             poles = self.Line.Poles.dict
-            queue.put({'actions': actions_name, 'poles': poles, 'time': self.time})
+            plan2out.put({'actions': actions_name, 'poles': poles, 'time': self.time})
             # utils.output(actions_name, self.Line.Poles.dict,  self.time, self.init_time, self.output)
             self.update_state(actions_name, min_end_time, stop_time)                            
             
@@ -768,7 +1019,8 @@ class Planning:
             if not self.products: 
                 return
 
-
+# plan = Planning(_config)
+# plan.execute()
 # finally:
 #     subprocess.run(f'rm *.pddl output output.sas plan.validation *sas_plan ', shell=True)
 #     plan.output.close()

@@ -7,21 +7,24 @@ import time
 import re
 from watchpoints import watch
 import ipdb
-
+output_data = {}
 class Output(multiprocessing.Process):
-    def __init__(self, queue):
+    def __init__(self, from_plan_queue, to_plan_queue):
+        super().__init__()
         self.time = 0                                   ## 设置算法初始运行时间，用来辅助判断动作的执行时间
         self.init_time = time.time()                    ## 记录现在的时间点， 用来辅助判断动作的执行时间
         self.actions = []                               ## 接收从算法传过来的动作序列 
         self.poles = {}                                 ## 接受从算法传过来的天车的对象，用来判断天车的上限移动和下限移动
         self.actions_queue = defaultdict(Queue)         ## 用来存放每个天车的动作序列， 一个天车一个队列，是对self.actions 清洗过后的数据
         self.ready_execute_actions = defaultdict(list)  ## 用来存放待执行的第一个动作
-        self.from_plan_queue = queue                    ## 和算法通信的队列
-                                                        ##
+        self.from_plan_queue = from_plan_queue          ## 和算法通信的队列
+        
+    
     def __init_ready_execute_actions__(self):           ## 初始化self.ready_execute_actions
         for pole in self.poles:                         ##            
             self.ready_execute_actions[pole] = []       ##
                                                         ##
+    
     def __get_data_from_queue__(self):                  ##
         '''                                             ##
             从队列中获取数据 actions time poles         ##
@@ -34,7 +37,6 @@ class Output(multiprocessing.Process):
             self.actions = data['actions']              ##
             self.time = data['time']                    ##
             self.poles = data['poles']                  ##
-                                                        ##
         return True                                     ##
 
     def __output_actions_to_plc__(self):
@@ -99,11 +101,41 @@ class Output(multiprocessing.Process):
             elif 'down' == act:
                 res = _handle_down(start, action)
             if res:
-                print(time.time() - self.init_time, saction)
+                print(f'{time.time() - self.init_time:5.2f}', saction)
+            self.time = start
             return res
+        
+        def check_all_poles_signal(poles):
+            return plcApi.check_all_poles_signal(poles)
+        
+        '''
+            每个天车的动作都必须严格按照规划的时间执行，如果
+            是相同时间执行的动作，那么一定要在同一秒执行，如
+            果某一个动作延迟了， 那么所有的动作都需要延迟，下
+            面我们把所有天车的第一个动作都放到ready_execute_actions
+            这个队列里面。
+            if 是移动动作并且不需要等待信号的，直接执行
+            else 取所有动作序列里动作时间最小的一批动作，
+                检查所有的天车的 signal 都为1， 一起执行。
+                如果天车的signal 有一个不为1，那么就等待
+                知道所有的天车的 signal都为0.
+        '''
         
         for pole, al in self.ready_execute_actions.items():
             pole_queue = self.actions_queue[pole]
+        #     while not al and not pole_queue.empty():
+        #         action = self.actions_queue[pole].get()
+        #         # 如果是move 且不需要等待那么就直接执行
+        #         # 否则加入reap队列
+        #         start, act = action
+        #         if 'move' in act[0]:
+        #             wait = act[-1]
+        #             if not wait:
+        #                 _handle_action_queue(action)
+        #         else:
+        #             self.ready_execute_actions[pole].append(action)
+        #             break
+            
             if not al and not pole_queue.empty():
                 action = self.actions_queue[pole].get()
                 res = _handle_action_queue(action)
@@ -114,8 +146,7 @@ class Output(multiprocessing.Process):
                 res = _handle_action_queue(action)
                 if res:
                     self.ready_execute_actions[pole].pop(0)
-            
-    
+
     def __handle_actions__(self):
         '''
             处理动作， 把动作变成如下形式
@@ -163,8 +194,10 @@ class Output(multiprocessing.Process):
             _, name, pole, slot, product, _ = re.split(' |\(|\)',act)
             pole_num = int(self.poles[pole].order_num)
             if 'hangup' in name:
+                self.poles[pole].up_down = 3
                 temp = ('rise', pole_num)
             elif 'hangoff' in name:
+                self.poles[pole].up_down = 1
                 temp = ('down', pole_num)
                 
             self.actions_queue[pole].put((start, temp))
@@ -186,13 +219,13 @@ class Output(multiprocessing.Process):
         if len(self.ready_execute_actions) == 0 and len(self.poles) > 0:
             self.__init_ready_execute_actions__()
     
-    def get_output_form_algorithm(self, queue):
+    def get_output_form_algorithm(self):
         '''
             这个线程用来获取算法输出的数据
         '''
         while True:
-            if not queue.empty():
-                self.__get_data_from_queue__(queue)
+            if not self.from_plan_queue.empty():
+                self.__get_data_from_queue__()
                 self.__handle_actions__()
     
     def send_output_to_plc(self):
@@ -202,8 +235,8 @@ class Output(multiprocessing.Process):
         while True:
             self.__output_actions_to_plc__()
     
-    def run(self, queue):
-        t1 = Thread(target=Output.get_output_form_algorithm, args = (self, queue))
+    def run(self):
+        t1 = Thread(target=Output.get_output_form_algorithm, args = (self, ))
         t2 = Thread(target=Output.send_output_to_plc, args = (self, ))
         t1.start()
         t2.start()
