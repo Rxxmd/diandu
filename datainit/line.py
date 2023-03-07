@@ -9,6 +9,7 @@ class Product:
         self.stage = 0
         self.available = True
         self.processes = processes
+        self.process_start_time = 0
         self.pole = None
         self.mid = False
     
