@@ -9,7 +9,6 @@ import utils
 import time
 from algorithm.predict import Predict
 
-PoleSpaceTimeRange = namedtuple('PoleSpaceTimeRange',['start_time', 'end_time', 'start_tank', 'end_tank'])
 class Planning:
     def __init__(self, config):
         self.init_time = time.time()
@@ -398,41 +397,6 @@ class Planning:
 
         return output_actions
 
-    def output_actions(self, actions_name, min_end_time):
-   
-        for time, act, d in sorted(actions_name):
-            
-            sp = re.split('[( )]', act)
-        
-            line = act
-
-            if 'hang-off-up' in act:
-                line = 'hangup-pole'
-                line = f'{float(time + self.time) : 9.3f}  {line:40}  {self.pole_load_time:10}'
-                print(line, file = self.output_actions_file)
-                line = 'hangoff-pole'
-                line = f'{float(time + self.time + d - self.pole_unload_time) : 9.3f}  {line:40}  {self.pole_unload_time:10}'
-                print(line, file = self.output_actions_file)
-                continue
-
-            if 'move-pole' in act:
-                
-                if 'move-pole-forward' in act:
-        
-                    line = f'(move-pole-forward {sp[2]} {sp[3]} {sp[4]})'
-        
-                else:
-        
-                    line = f'(move-pole-inverse {sp[2]} {sp[4]} {sp[3]})'
-
-            print(f'{float(time + self.time) : 9.3f}  {line:40}   {float(d):10.1f}',file = self.output_actions_file)              # 把结果输出到文件
-            
-            if 'move-pole' in act and d == self.pole_stop_time + self.pole_move_time:
-                # if self.time + time >= 78:
-                #     ipdb.set_trace()
-                position = self.Line.Poles.dict[sp[2]].position
-                print(f'{float(time + self.time + self.pole_move_time) : 9.3f} (stop-moving-pole {sp[2]} position{position}) {self.pole_stop_time : 10}', file = self.output_actions_file)
-    
     def del_end_products(self):
         # 删除已经执行完最后一道 craft 的 product
         delete = {}
@@ -614,14 +578,14 @@ class Planning:
     '''
         总的plan
     '''
-    def execute(self):
+    def execute(self, plan2out, out2plan):
         self.Line.Products.add_product(self.parser, 1, 'craft211', db)
         self.Line.Products.add_product(self.parser, 1, 'craft211', db)
         self.Line.Products.add_product(self.parser, 1, 'craft211', db)
         self.Line.Products.add_product(self.parser, 1, 'craft211', db)
-        self.Line.Products.add_product(self.parser, 1, 'craft211', db)
-        self.Line.Products.add_product(self.parser, 1, 'craft211', db)
-        self.Line.Products.add_product(self.parser, 1, 'craft211', db)
+        # self.Line.Products.add_product(self.parser, 1, 'craft211', db)
+        # self.Line.Products.add_product(self.parser, 1, 'craft211', db)
+        # self.Line.Products.add_product(self.parser, 1, 'craft211', db)
         Actual_time = {}
         while True:
             self.add_product()
@@ -640,9 +604,9 @@ class Planning:
             actions_name = self.change_move_time(actions_name, stop_time, min_end_time)
             
             self.update_products(actions_name, min_end_time)
-            
-            # poles = self.Line.Poles.dict
-            # plan2out.put({'actions': sorted(actions_name), 'poles': poles, 'time': self.time})
+            out_actions = self.sort_actions_name(actions_name)
+            poles = self.Line.Poles.dict
+            plan2out.put({'actions': sorted(out_actions), 'poles': poles})
             # utils.output(actions_name, self.Line.Poles.dict,  self.time, self.init_time, self.output)
             self.update_state(actions_name, min_end_time, stop_time)                            
             
@@ -657,8 +621,8 @@ class Planning:
             if not self.products: 
                 return
 
-plan = Planning(_config)
-plan.execute()
+# plan = Planning(_config)
+# plan.execute()
 # finally:
 #     subprocess.run(f'rm *.pddl output output.sas plan.validation *sas_plan ', shell=True)
 #     plan.output.close()
