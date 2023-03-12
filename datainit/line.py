@@ -33,7 +33,10 @@ class Products:
             if f'p{i}' not in self.names:
                 name = f'p{i}'
                 self.names.append(name)
-                parser.state.append(('product_at', name, f'slot{position}'))
+                state = list(parser.state)
+                state.append(('product_at', name, f'slot{position}'))
+                parser.state = tuple(state)
+                
                 parser.objects['product'].append(name)
                 # create product
                 product = Product(name, craft.name, craft.process, position)
@@ -50,6 +53,10 @@ class Process:
     lower_bound: int = -1
     upper_bound: int = -1
     tanks: list = field(default_factory = list)
+    wait: int = 0
+    drip: int = 0
+    up_num: int = 0
+    down_num: int = 0
 
 
 class Craft: 
@@ -70,7 +77,11 @@ class Craft:
             tanks = group["Tank"].tolist()
             lower_bound = group["LB"].iloc[0]
             upper_bound = group["UB"].iloc[0]
-            process = Process(lower_bound, upper_bound, tanks)
+            wait = 0
+            drip = 0
+            up_num = 0
+            down_num = 0
+            process = Process(lower_bound, upper_bound, tanks, wait, drip, up_num, down_num)
             processes[stage] = process
         return processes
 

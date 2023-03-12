@@ -20,9 +20,11 @@ class Planning:
         self.Plc = PLC
         self.Line = Line
         self.output_time = time.time() #用来同步output类的时间
-        self.poles_space_time_range = {}
         self.parser.state_to_tuple()
+        self.lock_stocking_slot = {slot:False for slot in self.Line.Slots.stocking} #读取上料槽
 
+        self.pole_min_end_times = {}   # 用来记录每个天车的下一次规划的时间点
+        self.tank_ocupy_time = {}
         self.pole_move_time   = config.pole_config['pole_moving_duration']
         self.pole_stop_time   = config.pole_config['pole_stop_duration']
         self.pole_start_time  = config.pole_config['pole_start_duration']
@@ -31,11 +33,23 @@ class Planning:
         self.gear_move_time   = config.gear_config['gear_moving_duration']
         self.collision_time = 5
         self.pole_interval = 4
-       
+        self.cut_pole = None
+        self.init_pole_min_end_time()
 
         # self.output = open(_config.other_config['output_actions_path'], 'w')
+    def init_pole_min_end_time(self):
+        for pole in self.Line.Poles.dict:
+            self.pole_min_end_times[pole] = float('inf')
 
     def add_product(self):
+        # data = PLC.get_bar_position(self.Line.Slots.stocking)
+        # if data and any(data.values()):
+        #     positions = [k for k ,v in data.items() if v == 1]
+        #     for pos in positions :
+        #         if not self.lock_stocking_slot[pos]:
+        #             print('添加物品成功')
+        #             self.lock_stocking_slot[pos] = True
+        #             self.Line.Products.add_product(self.parser, pos, 'craft211', db)
         for craft, products in self.Line.Products.dict.items():
             if not products:
                 continue
@@ -81,17 +95,18 @@ class Planning:
         poles.reverse()
         self.Line.Slots.set_blanking_slot_empty()
         exe_poles = self.get_exe_poles()
-        for pole in poles:
-         
-            if pole in exe_poles:
-                 
-                continue
 
+        for pole in poles:
+            if pole.name in exe_poles:
+                continue
+            
             if pole.select and pole.product and pole.up_down == 3 and pole.product in self.products: 
                 
                 product = self.products[pole.product]
-                next_slot = 'slot' + str(product.next_slot)
-                if product.position != product.next_slot and pole.position == product.next_slot:
+                
+                if product.position != product.next_slot:
+                    
+                    next_slot = 'slot' + str(product.next_slot)
 
                     state.append(('target_slot', next_slot, product.name))
                     
@@ -102,29 +117,18 @@ class Planning:
                     
                     if product.next_slot in self.Line.Slots.empty:
                         self.Line.Slots.empty.remove(product.next_slot)
-                elif pole.position != product.next_slot:
-                    goal.append(f'(pole_position {pole.name} {next_slot})')
 
-            # elif pole.select and not pole.product and not pole.mid and pole.up_down == 3:
+         
+            elif pole.select and not pole.product and not pole.mid:
+                goal.append(f'(pole_have_things {pole.name} {pole.select})')
 
-            #     goal.append(f'(pole_have_things {pole.name} {pole.select})')
-
-            elif not pole.select and not pole.product and pole.stopping:
+            elif not pole.select and not pole.product and pole.stopping and not pole.mid:
                 
-                product, slot = self.select_product(pole)
-                if product and slot:
-                    if slot == pole.position:
-                        goal.append(f'(pole_have_things {pole.name} {product})')
-                    else:
-                        goal.append(f'(pole_position {pole.name} slot{slot})')
-                
+                product = self.select_product(pole)
 
-            elif pole.select and pole.up_down == 1 and not pole.product:
-                position = self.products[pole.select].position
-                if position == pole.position:
-                    goal.append(f'(pole_have_things {pole.name} {pole.select})')
-                else:
-                    goal.append(f'(pole_position {pole.name} slot{position})')
+                if product:
+                    
+                    goal.append(f'(pole_have_things {pole.name} {product})')
         state = tuple(state)
         
         self.parser.state = state
@@ -137,37 +141,73 @@ class Planning:
         goal = gear_goal + pole_goal
         return goal
 
+    def record_ocupy_tank_time(self, tank, start_time):
+        self.tank_ocupy_time[tank] = P.closed(start_time, start_time + self.pole_load_time)
+
+    def is_collision(self, tank, start_time):
+        # pole_interval = -(-self.pole_interval // 2)
+        pole_interval = self.pole_interval
+        tanks = list(range(tank - pole_interval, tank + pole_interval + 1))
+        if set(tanks) & self.tank_ocupy_time.keys():
+            for tank in set(tanks) & self.tank_ocupy_time.keys():
+                if P.closed(start_time, start_time + self.pole_load_time) & self.tank_ocupy_time[tank]:
+                    return True
+        return False
+        
     def select_product(self, pole):
         min_t = float('inf')
         gproduct = None
         gtank = None
+        # 确定pole的下一个物品
+        # 预估pole下一次取物品的时间， 记录到pole_min_end_Time
         
         for k ,v in self.products.items():
-            # lower是预排序好的完成时间
-            upper = v.tank_table[v.stage][0].upper
-            move_time = abs(pole.position - v.position) + self.pole_start_time + self.pole_stop_time
-            if pole.position == v.position:
-                move_time = 0
-            if self.time - v.process_start_time >= v.processes[v.stage].lower_bound - move_time:
-                v.available = True
-            if upper - self.time <= move_time and v.available:
-
-            # if v.hoist_table[v.stage + 1] and  v.hoist_table[v.stage + 1][0].lower <= self.time and v.position == v.next_slot and v.available:
-                # print(self.time - v.hoist_table[v.stage][0].lower)
-                # if self.time - v.hoist_table[v.stage][0].lower > 10:
-                #     ipdb.set_trace()
-                tank = v.tank_table[v.stage][1]
+            # upper是预排序好的完成时间
+            try:
                 hoist = v.hoist_table[v.stage + 1][1]
+            except:
+                hoist = v.hoist_table[v.stage][1]
+            if hoist == pole.name:
                 
-                if hoist == pole.name and tank in self.Line.Slots.empty:
-                    tl = upper
-                    if min_t > tl:
-                        gproduct = v
-                        min_t = tl
-                        gtank = tank
-            
+                upper = v.tank_table[v.stage][0].upper
+                move_time = abs(pole.position - v.position) + self.pole_start_time + self.pole_stop_time
+                if pole.position == v.position:
+                    move_time = 0
+                #          已经反应的时间                         反应时间的下界
+                if self.time - v.process_start_time >= v.processes[v.stage].lower_bound - move_time:
+                    v.available = True
+                if upper - self.time <= move_time and v.available and v.position == v.next_slot:
+                # if v.hoist_table[v.stage + 1] and  v.hoist_table[v.stage + 1][0].lower <= self.time and v.position == v.next_slot and v.available:
+                    # print(self.time - v.hoist_table[v.stage][0].lower)
+                    # if self.time - v.hoist_table[v.stage][0].lower > 10:
+                    #     ipdb.set_trace()
+                    
+                    tank = v.tank_table[v.stage][1]
+                    hoist = v.hoist_table[v.stage + 1][1]
+                    end_move_time = self.time + move_time + self.pole_load_time + self.pole_start_time + self.pole_stop_time + abs(tank - v.position)
+
+                    cols1 = self.is_collision(v.position,self.time + move_time)
+                    cols2 = self.is_collision(tank, end_move_time)
+                    
+                    if cols1 or cols2:
+                        return None
+                   
+                    if hoist == pole.name and tank in self.Line.Slots.empty:
+                        tl = upper
+                        if min_t > tl:
+                            gproduct = v
+                            min_t = tl
+                            gtank = tank
+                
+                else:
+                    
+                    if upper < min_t and v.position == v.next_slot:
+                        min_t = upper
+                        self.pole_min_end_times[pole.name] = upper - self.time - move_time
+                        
         if gproduct:
-            
+            self.record_ocupy_tank_time(v.position, self.time + move_time)
+            self.record_ocupy_tank_time(gtank, end_move_time - self.pole_unload_time)
             self.products[gproduct.name].next_slot = gtank
 
             self.products[gproduct.name].stage += 1
@@ -180,30 +220,26 @@ class Planning:
         
             self.Line.Poles.dict[pole.name].select = gproduct.name
             
-            return gproduct.name, gproduct.position
+            return gproduct.name
             
-        return None, None
+        return None
 
     '''
         解析文件， 判断截断的动作
     '''
 
     def parser_min_time(self, actions_name, stop_time):
-        
+        # 计算下一次规划的时间点
+        # 1. 移动的最后一个动作
+        # 2. hangoff hangup 的开始时间， 结束时间
+        #    在hangoff 开始时就登记他的结束时间
+        # Actions_min_end_time = -1
+        amet_pole = None
+        act_min_end_time = float('inf')
         if self.Actions:
-
-            st = list(stop_time.values())
-        
-            st = sorted(st, key = lambda s: s[1])
+            act_min_end_time = self.Actions[0][0] - self.time
+            amet_pole = self.Actions[0][1].parameters[0]
             
-            if st:
-                min_end_time = min(st[0][1], self.Actions[0][0] - self.time)
-            else:
-                min_end_time = self.Actions[0][0] - self.time
-            
-            return min_end_time
-        
-        
         # 一个天车运行完成的at start时间点 或者 一道工艺完成的时间点
         # 如果动作是 move pole 就去 at end 时间点
         # 如果动作是 hangoff hangup 就取 at start 时间点
@@ -211,21 +247,35 @@ class Planning:
             if 'pole' in act_name:
                 pole = re.findall(r'(pole\d+)', act_name)[0]
                 
-                if 'hang' in act_name:
-                    if pole not in stop_time:
-                        stop_time[pole] = (time, time + duration) 
-                    
-        st = list(stop_time.values())
-        
-        st = sorted(st, key = lambda s: s[1])
-        
-        if actions_name and st:
-            
-            min_end_time = st[0][1]
-            
-        else:
-            min_end_time = 1
+                if 'hang' in act_name and pole not in stop_time:
+                    stop_time[pole] = (time, time) 
 
+        # pmets = sorted(self.pole_min_end_times.items(), key = lambda s: s[1])
+        
+        # pmet_pole, pole_min_end_time = pmets[0][0], pmets[0][1] - self.time
+        # if pole_min_end_time < 0:
+        #     pole_min_end_time = float('inf')
+        # elif pole_min_end_time == 0:
+        #     self.pole_min_end_times[pmet_pole] = float('inf')
+        pole_min_end_time = float('inf')
+        pmet_pole = None
+        st = sorted(stop_time.items(), key = lambda s: s[1][0])
+        st_min_end_time = float('inf')
+        if actions_name and st:
+            smet_pole, st_min_end_time = st[0][0], st[0][1][0]
+            if st[0][1][1] - st[0][1][0] == self.pole_start_time + self.pole_move_time:
+                self.pole_min_end_times[smet_pole] = self.time +  st[0][1][0]
+            else:
+                self.pole_min_end_times[smet_pole] = self.time +  st[0][1][1] + self.pole_load_time
+        min_end_time = min(st_min_end_time, pole_min_end_time, act_min_end_time)
+        if min_end_time == act_min_end_time:
+            self.cut_pole = amet_pole
+        elif min_end_time == pole_min_end_time:
+            self.cut_pole = pmet_pole
+        else:
+            self.cut_pole = smet_pole
+        if float('inf') == min_end_time:
+            min_end_time = 1
         return min_end_time
 
     def fliter_actions(self, actions_name, min_end_time, stop_time):
@@ -256,7 +306,7 @@ class Planning:
         forward = {}
         inverse = {}
         stop_time = {}
-
+        hangoff_stop_time = {}
         for time, act_name, duration in sorted(actions_name):
             
             if 'move-pole' in act_name:
@@ -306,15 +356,23 @@ class Planning:
 
         for time, act_name, duration in sorted(actions_name):
             
-            if 'move-pole' in act_name:
+            if 'hang' in act_name:
+                pole = re.findall(r'(pole\d+)', act_name)[0]
+                hangoff_stop_time[pole] = time
+            elif 'move-pole' in act_name:
                 
                 pole = re.findall(r'(pole\d+)', act_name)[0]
                 
                 if pole not in stop_time:
-                 
+                    
                     stop_time[pole] = forward[pole] if pole in forward else inverse[pole]
                     
                     stop_time[pole] = (stop_time[pole][0], stop_time[pole][1] + self.pole_stop_time)
+        # 如果是先hangoff 然后在移动的话就把最小的时间设置为hangoff 的开始时间
+        for pole in hangoff_stop_time:
+            if pole in stop_time:
+                if hangoff_stop_time[pole] < stop_time[pole][0]:
+                    stop_time[pole] = (hangoff_stop_time[pole], hangoff_stop_time[pole])
         return stop_time
 
     def change_move_time(self, actions_name, stop_time, min_end_time):
@@ -410,9 +468,9 @@ class Planning:
     '''
         更新状态
     '''
-    def add_action(self, actions_name, min_end_time):
+    def add_action(self, actions_name, min_end_time, plan2out):
         template_actions = self.parser.actions
-        
+        poles = self.Line.Poles.dict
         for time, act, duration in sorted(actions_name):
             
             if time <= min_end_time:
@@ -430,21 +488,22 @@ class Planning:
                         
                         self.Actions.append((self.time + time, tem_act, 'at start'))
                         self.Actions.append((self.time + time + duration, tem_act, 'at end'))
+                        
+                        # plan2out.put({'action': (self.time + time, act, duration), 'poles': poles})
                         break
     
-    def update_state(self, actions_name, min_end_time, stop_time):
+    def update_state(self, actions_name, min_end_time, stop_time, plan2out):
         
-        self.add_action(actions_name, min_end_time)
+        self.add_action(actions_name, min_end_time, plan2out)
         
         for time, act, status in sorted(self.Actions, key = lambda action: action[0]):
                 if time <= self.time + min_end_time:
-                    print(f'{time} {act.name} {act.parameters}')
-                    # with open('../data/211/actions.txt') as f:
-                    #     f.write(f'{time} {act.name} {act.parameters}')
+                    # print(f'{time} {act.name} {act.parameters}')
+               
                     self.parser.state = utils.apply(act, status, self.parser.state)
                     
-                    if 'hangoff' in act.name or 'hangup' in act.name or 'move-gear-equip' in act.name or 'start-moving' in act.name: 
-
+                    if 'hangoff' in act.name or 'hangup' in act.name or 'move-gear-equip' in act.name or 'start-moving' in act.name:
+                            
                         self.update_pole_and_product(act, status)
 
                     if 'move-pole' in act.name:
@@ -456,15 +515,14 @@ class Planning:
                             self.Line.Poles.dict[pole].stop_time = self.time + stop_time[pole][1]
 
                         elif self.Line.Poles.dict[pole].stop_time == time:
-                            state = list(self.parser.state)
                             
-                            self.Line.Poles.dict[pole].stopping = True
-
-                            state.remove(('pole_start_moving', pole))
-                            
-                            state.append(('pole_stop_moving',pole))
-                            
-                            self.parser.state = tuple(state)
+                            if not self.Line.Poles.dict[pole].select:
+                                state = list(self.parser.state)
+                                self.Line.Poles.dict[pole].stopping = True
+                                state.remove(('pole_start_moving', pole))
+                                state.append(('pole_stop_moving',pole))
+                                
+                                self.parser.state = tuple(state)
         
         for i in range(len(self.Actions) - 1, -1, -1):
             
@@ -489,14 +547,28 @@ class Planning:
                     self.products[product].position = position
                
     def update_pole_and_product(self, action, status):
+        '''
+            这个函数根据每个action 对 Product 和 Pole 进行相应的更新
+            参数:
+            action: 执行的动作
+            status: at start | at end
+        '''
         pole = action.parameters[0]
         product = action.parameters[-1]
+        # 如果动作是启动天车start-moving, 就把pole 的stopping 属性置为False 
         if 'start-moving' in action.name and status == 'at start':
-            
             self.Line.Poles.dict[pole].stopping = False
+        
         if product in self.products:
             if 'hangoff' in action.name and status == 'at start':
                 
+                state = list(self.parser.state)
+                self.Line.Poles.dict[pole].stopping = True
+                state.remove(('pole_start_moving', pole))
+                
+                state.append(('pole_stop_moving',pole))
+                
+                self.parser.state = tuple(state)
                 self.products[product].mid = True
                 self.Line.Poles.dict[pole].mid = True
             
@@ -512,6 +584,15 @@ class Planning:
                 
             
             elif 'hangup' in action.name and status == 'at start':
+                
+                state = list(self.parser.state)
+                if ('pole_start_moving', pole) in state:
+                    self.Line.Poles.dict[pole].stopping = True
+                    state.remove(('pole_start_moving', pole))
+                    state.append(('pole_stop_moving',pole))
+                    self.parser.state = tuple(state)
+
+                
                 self.products[product].mid = True
                 self.products[product].pole = pole
                 
@@ -520,22 +601,13 @@ class Planning:
                    
 
             elif 'hangup' in action.name and status == 'at end':
+                position = self.products[product].position
+                if position in self.lock_stocking_slot and self.lock_stocking_slot[position]:
+                    self.lock_stocking_slot[position] = False
                 self.products[product].mid = False
                 self.Line.Poles.dict[pole].up_down = 3
                 
                 self.Line.Poles.dict[pole].mid = False
-                
-            # elif 'hang-off-up' in action.name and status == 'at start':
-            #     self.products[product].mid = True
-            #     self.products[product].pole = pole
-
-            #     self.Line.Poles.dict[pole].product = product
-            #     self.Line.Poles.dict[pole].mid = True
-
-            # elif 'hang-off-up' in action.name and status == 'at end':
-            #     self.products[product].mid = False
-                
-            #     self.Line.Poles.dict[pole].mid = False
             
             elif 'stop-moving' in action.name and status == 'at end':
 
@@ -570,6 +642,8 @@ class Planning:
            
     def sort_actions_name(self, actions_name):
         temp = []
+       
+
         for act in sorted(actions_name):
             act = list(act)
             act[0] += self.time
@@ -579,36 +653,45 @@ class Planning:
         总的plan
     '''
     def execute(self, plan2out, out2plan):
-        self.Line.Products.add_product(self.parser, 1, 'craft211', db)
-        self.Line.Products.add_product(self.parser, 1, 'craft211', db)
-        self.Line.Products.add_product(self.parser, 1, 'craft211', db)
-        self.Line.Products.add_product(self.parser, 1, 'craft211', db)
-        # self.Line.Products.add_product(self.parser, 1, 'craft211', db)
-        # self.Line.Products.add_product(self.parser, 1, 'craft211', db)
-        # self.Line.Products.add_product(self.parser, 1, 'craft211', db)
-        Actual_time = {}
-        while True:
-            self.add_product()
 
+        # self.Line.Products.add_product(self.parser, 1, 'craft211', db)
+        # self.Line.Products.add_product(self.parser, 1, 'craft211', db)
+        # self.Line.Products.add_product(self.parser, 1, 'craft211', db)
+        # self.Line.Products.add_product(self.parser, 1, 'craft211', db)
+        # self.Line.Products.add_product(self.parser, 1, 'craft211', db)
+        # self.Line.Products.add_product(self.parser, 1, 'craft211', db)
+        count = 0
+        start = time.time()
+        while True:
+            if (time.time() - start) % 200 >= count:
+                self.Line.Products.add_product(self.parser, 1, 'craft211', db)
+                count += 1
+
+            self.add_product()
+            self.predict.products = self.products
+       
             goal = self.gen_goal() 
-            utils.state2pddl(self.parser, goal, _config.other_config['new_problem_path'])
+            
             if goal:
+                utils.state2pddl(self.parser, goal, _config.other_config['new_problem_path'])
                 subprocess.run(f'D:/cygwin64/bin/python2.7  {_config.other_config["planning_path"]} she {_config.domain_config["domain_path"]} {_config.other_config["new_problem_path"]} --no-iterated  --time 5 > console_output.txt', shell=True)
             actions_name = utils.parser_sas(goal)   
+            
             stop_time = self.parser_stop_time(actions_name) 
-
             min_end_time = self.parser_min_time(actions_name, stop_time)
-
+            
             actions_name = self.fliter_actions(actions_name, min_end_time, stop_time)
 
             actions_name = self.change_move_time(actions_name, stop_time, min_end_time)
             
             self.update_products(actions_name, min_end_time)
-            out_actions = self.sort_actions_name(actions_name)
-            poles = self.Line.Poles.dict
-            plan2out.put({'actions': sorted(out_actions), 'poles': poles})
+            # out_actions = self.sort_actions_name(actions_name)
+            # ipdb.set_trace()
+            # if out_actions:
+            #     poles = self.Line.Poles.dict
+            #     plan2out.put({'actions': sorted(out_actions), 'poles': poles})
             # utils.output(actions_name, self.Line.Poles.dict,  self.time, self.init_time, self.output)
-            self.update_state(actions_name, min_end_time, stop_time)                            
+            self.update_state(actions_name, min_end_time, stop_time, plan2out)                            
             
             self.update_products_position()
 
@@ -618,11 +701,11 @@ class Planning:
             
             self.time += min_end_time
 
-            if not self.products: 
-                return
+            # if not self.products: 
+            #     return
 
-# plan = Planning(_config)
-# plan.execute()
+plan = Planning(_config)
+plan.execute(1,1)
 # finally:
 #     subprocess.run(f'rm *.pddl output output.sas plan.validation *sas_plan ', shell=True)
 #     plan.output.close()

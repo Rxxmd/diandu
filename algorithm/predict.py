@@ -57,7 +57,8 @@ class Predict:
                 self.tank_hoist_table[k][tank] = P.open(-1, -1)
     
     def gen_hoist_tank_table(self, product):
-        pole_interval = -(-self.pole_interval // 2) 
+        # pole_interval = -(-self.pole_interval // 2) 
+        pole_interval = self.pole_interval
         tank_table = product.tank_table
         hoist_table = product.hoist_table
         init_positiion = product.position
@@ -134,7 +135,8 @@ class Predict:
                 return table[times[mid + 1]]
 
     def get_available_pole_interval(self, pole_interval, tank, next_tank, pole, empty_move_time, load_move_time):
-        pole_dis = -(-self.pole_interval // 2) 
+        # pole_dis = -(-self.pole_interval // 2) 
+        pole_dis = self.pole_interval
         # 确定tank周围的所有tanks
         start_tanks = [tank for tank in range(tank - pole_dis, tank + pole_dis + 1)]
         start_tanks = list(set(start_tanks) & set(self.Line.Slots.array))
@@ -220,25 +222,27 @@ class Predict:
         max_start = cur_time + process[cur_stage].upper_bound
 
         temp = P.open(cur_time - first_empty_move_time, max_start - first_empty_move_time) & ~self.hoist_table[pole.name]
-        start_time = temp.lower + first_empty_move_time
+        try:
+            start_time = temp.lower + first_empty_move_time
+        except:
+            ipdb.set_trace()
         if temp.lower < 0:
             start_time = 0 + first_empty_move_time
-        res = self.predict(cur_stage, cur_time, cur_time, max_start,  cur_tank, hoist_position_table, max_stage, cur_stage, process)
+        
+        res = self.predict(cur_stage, cur_time, cur_time, max_start,  cur_tank, hoist_position_table, max_stage, cur_stage, process, cur_time)
         if res:
             self.hoist_result[cur_stage] = (P.closed(start_time - first_empty_move_time, start_time), pole.name)
             product.tank_table = self.tank_result
             product.hoist_table = self.hoist_result
-            ipdb.set_trace()
             self.update_tank_table(self.tank_result, cur_tank)
             self.update_hoist_position_table(hoist_position_table)
             self.update_hoist_table(self.hoist_result)
             self.gen_hoist_tank_table(product)
             print(self.tank_result)
-            print(self.hoist_result)
             return product
         return False
         
-    def predict(self,stage, start_time, end_time, max_start, tank, hoist_pos_table, max_stage, first_stage, process):
+    def predict(self,stage, start_time, end_time, max_start, tank, hoist_pos_table, max_stage, first_stage, process, cur_time):
     
         """
         stage: 当前工艺阶段
@@ -263,6 +267,7 @@ class Predict:
                 return None
         if self.tank_flag[stage]:
             return None
+   
         lb, ub = process[stage].lower_bound,  process[stage].upper_bound, # 当前阶段的要求
         next_tanks = process[stage + 1].tanks
         pole = [v for k, v in self.Line.Poles.dict.items() if tank in v.interval and next_tanks[-1] in v.interval][0]
@@ -275,81 +280,40 @@ class Predict:
         available_tank_interval = tank_interval - self.tank_table[tank]
         # 计算pole的实际可用时间区间（排除了已经被占用的时间段）。
         available_pole_interval = pole_interval - self.hoist_table[pole.name]
+    
         for ntank in next_tanks:       # 遍历下一个工艺阶段涉及的所有tank
             for ati in available_tank_interval:
-                if ati.upper - ati.lower >= lb:
+                if ati.upper - ati.lower >= lb:  # ati.uppper 先当与max_end, ati.lower相当于start_time
                     api = P.open(ati.lower + lb - 100, ati.upper + 100) & available_pole_interval
+                    
                     pole_position = self.get_pole_position(api.lower, pole, hoist_pos_table)
                     empty_move_time, load_move_time = self.get_pole_move_time(pole_position, tank, ntank)
-                    if api.upper - api.lower >= empty_move_time + load_move_time and ati.lower <= max_start:
-                        if api.lower <= ati.lower - empty_move_time:
+                    api &= self.get_available_pole_interval(api, tank, ntank, pole, empty_move_time, load_move_time)
+                    
+                    try:
+                        if api.lower <= ati.lower +lb - empty_move_time:
                             min_end = ati.lower + lb
                         else:
                             min_end = api.lower + empty_move_time
-                        
-                        max_end = api.upper - load_move_time
-                        hoist_pos_table[pole.name][ati.lower] = tank
-                        pole_position = tank
-                        res = self.predict(stage + 1,min_end + load_move_time, max_end + load_move_time, max_end + load_move_time, ntank, hoist_pos_table, max_stage, first_stage, process) 
-                        if res:
-                            if not (P.open(ati.lower, res[0] - load_move_time) & self.tank_table[ntank]):
-                                best_solution = (P.closed(ati.lower, res[0] - load_move_time), ntank)
-                                self.tank_flag[stage] = True
-                                self.tank_result[stage] = best_solution
-                                self.hoist_result[stage + 1] = (P.open(res[0] - empty_move_time - load_move_time, res[0]), pole.name)
-                                self.hoist_position_result[pole.name][res[0] - load_move_time] = tank
-                                self.hoist_position_result[pole.name][res[0]] = ntank
-                                
-                                return best_solution[0].lower, best_solution[1]
+                        if api.upper - api.lower >= empty_move_time + load_move_time and min_end - lb <= max_start and min_end - lb >= start_time:
+                            max_end = min(api.upper - load_move_time, ati.upper)
+                            hoist_pos_table[pole.name][ati.lower] = tank
+                            pole_position = tank
+                            res = self.predict(stage + 1,min_end + load_move_time, max_end + load_move_time, max_end + load_move_time, ntank, hoist_pos_table, max_stage, first_stage, process, cur_time) 
+                            if res:
+                                if not (P.open(ati.lower, res[0] - load_move_time) & self.tank_table[ntank]):
+                                    best_solution = (P.closed(ati.lower, res[0] - load_move_time), ntank)
+                                    self.tank_flag[stage] = True
+                                    self.tank_result[stage] = best_solution
+                                    self.hoist_result[stage + 1] = (P.open(res[0] - empty_move_time - load_move_time, res[0]), pole.name)
+                                    self.hoist_position_result[pole.name][res[0] - load_move_time] = tank
+                                    self.hoist_position_result[pole.name][res[0]] = ntank
+                                    
+                                    return best_solution[0].lower, best_solution[1]
+                    except:
+                        ipdb.set_trace()
         return None
         
     
 
 
-
-        #     res = self.match_tank(tanks, lower_bound, temp_tt, sum_t)  
-        #     if not res:
-        #         return False
-            
-        #     slc_tank, res_t = res
-            
-        #     res = self.match_pole(avai_poles, slc_tank, next_tank, sum_t, res_t) 
-        #     if not res:
-        #         return False
-            
-        #     pole, ts, te = res
-        #     if sum_t + res_t <= ts:
-                
-        #         ipdb.set_trace()
-        #     res = self.match_pole_tank(pole.position, slc_tank, ts, temp_ht)
-        #     if not res:
-        #         return False
-        #     temp_ht, end_t = res
-            
-        #     res = self.match_pole_tank(slc_tank, next_tank,end_t, temp_ht )
-        #     if not res:
-        #         return False
-        #     temp_ht, end_t = res
-        #     pole.position = next_tank
-        #     if set(tanks).issubset(self.Line.Slots.stocking) and product.stage == 0:    
-        #         product.hoist_table[stage] = (pole.name, P.closed(ts, te))
-        #         temp_pt[pole.name] = temp_pt[pole.name] | P.closed(ts, te)
-
-        #         product.stage += 1
-        #         sum_t += (te - ts)
-                
-        #     else:  
-        #         product.tank_table[stage] = (slc_tank, P.closed(sum_t, sum_t + res_t)) 
-        #         temp_tt[slc_tank] |= P.closed(sum_t, sum_t + res_t)
-        #         product.hoist_table[stage] = (pole.name, P.closed(ts, te)) 
-        #         temp_pt[pole.name] |= P.closed(ts, te)
-                
-        #         product.stage += 1
-        #         sum_t += (te - ts + res_t)
-                   
-        # self.tank_table = temp_tt
-        # self.hoist_table = temp_pt
-        # self.hoist_tank_table = temp_ht
-        # return True
-    
-    

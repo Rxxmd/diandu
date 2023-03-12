@@ -1,6 +1,7 @@
 from collections import defaultdict
 import os
 import clr
+import ipdb
 
 # 定位DLL的位置
 cur_path  = os.path.abspath(__file__)
@@ -32,12 +33,14 @@ INIT_WRITE_ADDR   = 13800
 HOIST_COMD_ADDR   = 15400
 TANK_SELECT_ADDR  = 95536
 HOIST_UD_ADDR     = 95896
-
+BAR_POS_ADDR = 12900
+CRAFT_ADDR = 15700
+STAGE_ADDR = 16000
 MAX_TANK  = 20
 MAX_WORD  = 2
 MAX_HOIST = 30
 
-_PLC = PLC("192.168.1.2", 9600, 0, 2, 0, 0, 1, 0) # 创建Plc对象
+_PLC = PLC("192.168.1.2", 9600, 0, 2, 0, 0, 3, 0) # 创建Plc对象
         
 '''
     Write API
@@ -204,6 +207,33 @@ def wait_external_signal(pole_num, slot_num):
     data = EXSIGNAL_CODE + second_num + first_num
     __write(pole_num, [data])
 
+def get_products_stage(tanks=list(range(0, 300))):
+    '''
+        获取步序， 在加入物品， 和断电重启时调用
+        参数:
+            tanks: list 需要查询的槽位
+    '''
+    return __read(tanks, STAGE_ADDR, MAX_TANK, False)
+
+def get_products_craft(tanks=list(range(0, 300))):
+    '''
+        获取流程， 在加入物品， 和断电重启时调用
+        参数:
+            tanks: list 需要查询的槽位
+    '''
+    return __read(tanks, CRAFT_ADDR, MAX_TANK, False)     
+
+def write_products_stage(tank, stage):
+    '''
+        往STAGE_ADDRRESS里写入步序， 每次执行hangoff的时候写入
+        参数: 
+            tank 用来偏移地址
+            stage 步序
+    '''
+    data = [stage]
+    address = STAGE_ADDR + tank
+    _PLC.Write(address, data)
+
 def basin_operation(pole_num, *, operation):
     '''
         operation = 1 : open basin
@@ -227,7 +257,20 @@ def final_step(pole_num):
     READ API
 '''
 
-def get_tank_status(tanks):
+def check_all_poles_signal(hoists):
+    '''
+        检查指定的天车是否就绪
+    '''
+    data = __read(hoists, HOIST_COMD_ADDR, MAX_HOIST, False)
+    if not data:
+        return False
+    if all(data.values()):
+        return True
+    return False
+
+
+
+def get_tank_status(tanks=list(range(0, 300))):
     '''
         查看可以使用的槽位 1 表示可用， 0 表示不可用（封槽）
         参数:
@@ -262,7 +305,13 @@ def get_hoist_auto(hoists):
         print(f'天车 {no_auto_hoists} 没有设置为自动模式')
         return False  
 
-def get_hoist_position(hoists):
+def get_bar_position(tanks=list(range(0, 300))):
+    '''
+        查询飞巴的位置
+    '''
+    return __read(tanks, BAR_POS_ADDR, 20, True)
+
+def get_hoist_position(hoists=list(range(0,30))):
     '''
         查询天车当前的位置
         参数：
@@ -281,6 +330,7 @@ def __read(input, address, maxnum, is_bit):
     data = _PLC.Read(address, maxnum, 0)
     return convert_data(data, input, is_bit)
 
+
 def convert_data(data, input, is_bit):
     '''
         参数:
@@ -294,11 +344,20 @@ def convert_data(data, input, is_bit):
         for it in input:
             index = it // 16
             offset = it % 16
-            status = (data[0][index] >> offset) & 1
-            res[it] = status
+            try:
+                status = (data[0][index] >> offset) & 1
+                res[it] = status
+            except:
+                print('读数据出错')
+                return False
     else:
+        
         for it in input:
-            res[it] = data[0][it]
+            try:
+                res[it] = data[0][it]
+            except:
+                print('读数据出错')
+                return False
     return res
 
 
@@ -316,7 +375,6 @@ def convert_data(data, input, is_bit):
     
 #     top_move(i, position - 2)
 #     down(i, 1, 0)
-
 
 
 

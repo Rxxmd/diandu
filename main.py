@@ -14,10 +14,11 @@
         6.若遇到各种需要从新计算的情况，保存预判的顺序，从新计算
 '''
 from multiprocessing import Process, Queue
+import subprocess
 import time
 from datainit import plcApi
+from datainit.global_var import _config
 from plan import Planning
-import _config
 from output import *
 TANKS = _config.slot_config['slots']
 HOIST = _config.pole_config['poles']
@@ -63,14 +64,17 @@ def planing(plan2out, out2plan):
 
 from multiprocessing import Process, Queue
 if __name__ == '__main__': 
-    check_hoist_status(HOIST)             # 检查天车在下限而且是自动状态才能开始规划
-    plan2out = Queue()              
-    out2plan = Queue()
-    p1 = Process(target = planing, args=(plan2out, out2plan ))
-    p2 = Output(plan2out, out2plan)
+    try:
+        check_hoist_status(HOIST)             # 检查天车在下限而且是自动状态才能开始规划
+        plan2out = Queue()              
+        out2plan = Queue()
+        p1 = Process(target = planing, args=(plan2out, out2plan ))
+        p2 = Output(plan2out, out2plan)
 
-    p1.start()
-    p2.start()
+        p1.start()
+        p2.start()
+    finally:
+        subprocess.run(f'rm *.pddl output output.sas plan.validation *sas_plan ', shell=True)
     # plan = Planning(_config)
     # plan.execute()
 # plcApi.below_move(1, 2)
