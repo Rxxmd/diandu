@@ -3,7 +3,6 @@ import glob
 import ipdb
 from datainit import plcApi
 import time
-from watchpoints import watch
 def replace_param(action, param_list):
     param_map = {}
     

@@ -3,6 +3,8 @@ import os
 from datainit import plcApi
 import ipdb
 
+TABLE_NAME = 'processedittable'
+
 BLANKING_SLOT = [1]    # 下料槽位    
 STOCKING_SLOT = [1]     # 上料槽位
 BORDER_SLOT = [1, 39]   # 边界槽位
@@ -32,7 +34,7 @@ while True:
         break
 empty_slots = [k for k, v in slots.items() if v == 1]
 slots = range(empty_slots[0], empty_slots[-1] + 1) 
-    # 读取天车位置
+# 读取天车位置
 while True:
     pole_positions = plcApi.get_hoist_position()
     if pole_positions:

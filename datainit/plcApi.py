@@ -36,7 +36,8 @@ HOIST_UD_ADDR     = 95896
 BAR_POS_ADDR = 12900
 CRAFT_ADDR = 15700
 STAGE_ADDR = 16000
-MAX_TANK  = 20
+MAX_TANK  = 300
+MAX_TANK_BIT = 20
 MAX_WORD  = 2
 MAX_HOIST = 30
 
@@ -276,7 +277,7 @@ def get_tank_status(tanks=list(range(0, 300))):
         参数:
             tanks: list 需要查询的槽位
     '''
-    return __read(tanks, TANK_SELECT_ADDR, MAX_TANK, True)
+    return __read(tanks, TANK_SELECT_ADDR, MAX_TANK_BIT, True)
     
 def get_hoist_up_down(hoists):
     '''

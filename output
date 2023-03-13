@@ -4,205 +4,205 @@ end_version
 begin_metric
 0
 end_metric
-53
+55
 begin_variable
-var11
--1
-2
-Atom pole_start_moving(pole3)
-Atom pole_stop_moving(pole3)
-end_variable
-begin_variable
-var10
+var13
 -1
 2
 Atom pole_start_moving(pole2)
 Atom pole_stop_moving(pole2)
 end_variable
 begin_variable
-var16
+var12
+-1
+2
+Atom pole_start_moving(pole1)
+Atom pole_stop_moving(pole1)
+end_variable
+begin_variable
+var19
 -1
 2
 Atom slot_have_pole(slot1)
 NegatedAtom slot_have_pole(slot1)
 end_variable
 begin_variable
-var48
+var51
 -1
 2
 Atom slot_have_pole(slot39)
 NegatedAtom slot_have_pole(slot39)
 end_variable
 begin_variable
-var27
+var30
 -1
 2
 Atom slot_have_pole(slot2)
 NegatedAtom slot_have_pole(slot2)
 end_variable
 begin_variable
-var47
+var50
 -1
 2
 Atom slot_have_pole(slot38)
 NegatedAtom slot_have_pole(slot38)
 end_variable
 begin_variable
-var38
+var41
 -1
 2
 Atom slot_have_pole(slot3)
 NegatedAtom slot_have_pole(slot3)
 end_variable
 begin_variable
-var46
+var49
 -1
 2
 Atom slot_have_pole(slot37)
 NegatedAtom slot_have_pole(slot37)
 end_variable
 begin_variable
-var49
+var52
 -1
 2
 Atom slot_have_pole(slot4)
 NegatedAtom slot_have_pole(slot4)
 end_variable
 begin_variable
-var45
+var48
 -1
 2
 Atom slot_have_pole(slot36)
 NegatedAtom slot_have_pole(slot36)
 end_variable
 begin_variable
-var50
+var53
 -1
 2
 Atom slot_have_pole(slot5)
 NegatedAtom slot_have_pole(slot5)
 end_variable
 begin_variable
-var44
+var47
 -1
 2
 Atom slot_have_pole(slot35)
 NegatedAtom slot_have_pole(slot35)
 end_variable
 begin_variable
-var51
+var54
 -1
 2
 Atom slot_have_pole(slot6)
 NegatedAtom slot_have_pole(slot6)
 end_variable
 begin_variable
-var43
+var46
 -1
 2
 Atom slot_have_pole(slot34)
 NegatedAtom slot_have_pole(slot34)
 end_variable
 begin_variable
-var52
+var55
 -1
 2
 Atom slot_have_pole(slot7)
 NegatedAtom slot_have_pole(slot7)
 end_variable
 begin_variable
-var42
+var45
 -1
 2
 Atom slot_have_pole(slot33)
 NegatedAtom slot_have_pole(slot33)
 end_variable
 begin_variable
-var53
+var56
 -1
 2
 Atom slot_have_pole(slot8)
 NegatedAtom slot_have_pole(slot8)
 end_variable
 begin_variable
-var41
+var44
 -1
 2
 Atom slot_have_pole(slot32)
 NegatedAtom slot_have_pole(slot32)
 end_variable
 begin_variable
-var54
+var57
 -1
 2
 Atom slot_have_pole(slot9)
 NegatedAtom slot_have_pole(slot9)
 end_variable
 begin_variable
-var40
+var43
 -1
 2
 Atom slot_have_pole(slot31)
 NegatedAtom slot_have_pole(slot31)
 end_variable
 begin_variable
-var17
+var20
 -1
 2
 Atom slot_have_pole(slot10)
 NegatedAtom slot_have_pole(slot10)
 end_variable
 begin_variable
-var39
+var42
 -1
 2
 Atom slot_have_pole(slot30)
 NegatedAtom slot_have_pole(slot30)
 end_variable
 begin_variable
-var18
+var21
 -1
 2
 Atom slot_have_pole(slot11)
 NegatedAtom slot_have_pole(slot11)
 end_variable
 begin_variable
-var19
+var22
 -1
 2
 Atom slot_have_pole(slot12)
 NegatedAtom slot_have_pole(slot12)
 end_variable
 begin_variable
-var20
+var23
 -1
 2
 Atom slot_have_pole(slot13)
 NegatedAtom slot_have_pole(slot13)
 end_variable
 begin_variable
-var35
+var38
 -1
 2
 Atom slot_have_pole(slot27)
 NegatedAtom slot_have_pole(slot27)
 end_variable
 begin_variable
-var34
+var37
 -1
 2
 Atom slot_have_pole(slot26)
 NegatedAtom slot_have_pole(slot26)
 end_variable
 begin_variable
-var37
+var40
 -1
 2
 Atom slot_have_pole(slot29)
 NegatedAtom slot_have_pole(slot29)
 end_variable
 begin_variable
-var9
+var11
 -1
 12
 Atom pole_position(pole3, slot28)
@@ -219,91 +219,91 @@ Atom pole_position(pole3, slot38)
 Atom pole_position(pole3, slot39)
 end_variable
 begin_variable
-var36
+var39
 -1
 2
 Atom slot_have_pole(slot28)
 NegatedAtom slot_have_pole(slot28)
 end_variable
 begin_variable
-var33
+var36
 -1
 2
 Atom slot_have_pole(slot25)
 NegatedAtom slot_have_pole(slot25)
 end_variable
 begin_variable
-var32
+var35
 -1
 2
 Atom slot_have_pole(slot24)
 NegatedAtom slot_have_pole(slot24)
 end_variable
 begin_variable
-var31
+var34
 -1
 2
 Atom slot_have_pole(slot23)
 NegatedAtom slot_have_pole(slot23)
 end_variable
 begin_variable
-var30
+var33
 -1
 2
 Atom slot_have_pole(slot22)
 NegatedAtom slot_have_pole(slot22)
 end_variable
 begin_variable
-var29
+var32
 -1
 2
 Atom slot_have_pole(slot21)
 NegatedAtom slot_have_pole(slot21)
 end_variable
 begin_variable
-var28
+var31
 -1
 2
 Atom slot_have_pole(slot20)
 NegatedAtom slot_have_pole(slot20)
 end_variable
 begin_variable
-var26
+var29
 -1
 2
 Atom slot_have_pole(slot19)
 NegatedAtom slot_have_pole(slot19)
 end_variable
 begin_variable
-var25
+var28
 -1
 2
 Atom slot_have_pole(slot18)
 NegatedAtom slot_have_pole(slot18)
 end_variable
 begin_variable
-var24
+var27
 -1
 2
 Atom slot_have_pole(slot17)
 NegatedAtom slot_have_pole(slot17)
 end_variable
 begin_variable
-var23
+var26
 -1
 2
 Atom slot_have_pole(slot16)
 NegatedAtom slot_have_pole(slot16)
 end_variable
 begin_variable
-var21
+var24
 -1
 2
 Atom slot_have_pole(slot14)
 NegatedAtom slot_have_pole(slot14)
 end_variable
 begin_variable
-var7
+var9
 -1
 15
 Atom pole_position(pole1, slot1)
@@ -323,14 +323,14 @@ Atom pole_position(pole1, slot8)
 Atom pole_position(pole1, slot9)
 end_variable
 begin_variable
-var22
+var25
 -1
 2
 Atom slot_have_pole(slot15)
 NegatedAtom slot_have_pole(slot15)
 end_variable
 begin_variable
-var8
+var10
 -1
 16
 Atom pole_position(pole2, slot14)
@@ -351,39 +351,32 @@ Atom pole_position(pole2, slot28)
 Atom pole_position(pole2, slot29)
 end_variable
 begin_variable
-var13
--1
-2
-Atom product_at(p1, slot1)
-<none of those>
-end_variable
-begin_variable
 var14
 -1
 2
-Atom product_at(p2, slot1)
+Atom product_at(p0, slot21)
 <none of those>
+end_variable
+begin_variable
+var59
+-1
+2
+Atom slot_not_available(slot21)
+NegatedAtom slot_not_available(slot21)
 end_variable
 begin_variable
 var15
 -1
 2
-Atom product_at(p3, slot1)
+Atom product_at(p1, slot20)
 <none of those>
 end_variable
 begin_variable
-var2
+var58
 -1
 2
-Atom pole_have_things(pole1, p0)
-NegatedAtom pole_have_things(pole1, p0)
-end_variable
-begin_variable
-var0
--1
-2
-Atom pole_empty(pole1)
-NegatedAtom pole_empty(pole1)
+Atom slot_not_available(slot20)
+NegatedAtom slot_not_available(slot20)
 end_variable
 begin_variable
 var1
@@ -393,42 +386,63 @@ Atom pole_empty(pole2)
 NegatedAtom pole_empty(pole2)
 end_variable
 begin_variable
-var6
--1
-2
-Atom pole_have_things(pole2, p0)
-NegatedAtom pole_have_things(pole2, p0)
-end_variable
-begin_variable
-var55
+var61
 -1
 3
-Atom slot_not_available(slot14)
-Atom target_slot(slot14, p0)
+Atom slot_not_available(slot32)
+Atom target_slot(slot32, p2)
 <none of those>
 end_variable
 begin_variable
-var12
+var7
 -1
 2
-Atom product_at(p0, slot14)
-NegatedAtom product_at(p0, slot14)
+Atom pole_have_things(pole3, p2)
+NegatedAtom pole_have_things(pole3, p2)
+end_variable
+begin_variable
+var17
+-1
+2
+Atom product_at(p3, slot29)
+<none of those>
+end_variable
+begin_variable
+var60
+-1
+2
+Atom slot_not_available(slot29)
+NegatedAtom slot_not_available(slot29)
+end_variable
+begin_variable
+var2
+-1
+2
+Atom pole_empty(pole3)
+NegatedAtom pole_empty(pole3)
+end_variable
+begin_variable
+var16
+-1
+2
+Atom product_at(p2, slot32)
+NegatedAtom product_at(p2, slot32)
 end_variable
 3
 begin_mutex_group
 2
-52 0
-51 1
+54 0
+49 1
 end_mutex_group
 begin_mutex_group
 2
-52 0
-51 1
+54 0
+49 1
 end_mutex_group
 begin_mutex_group
 2
-52 0
-51 1
+54 0
+49 1
 end_mutex_group
 begin_state
 1
@@ -436,17 +450,6 @@ begin_state
 1
 1
 1
-0
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
 1
 1
 1
@@ -459,12 +462,8 @@ begin_state
 1
 0
 1
-10
 1
-1
-1
-1
-1
+0
 1
 1
 1
@@ -472,98 +471,107 @@ begin_state
 1
 1
 0
+1
+1
 5
 1
-12
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+14
+1
+13
+0
 0
 0
 0
 0
 1
 0
-1
+0
+0
 1
 1
 end_state
 begin_goal
 1
-52 0
+54 0
 end_goal
-89
+88
 begin_operator
-do-hangoff-pole pole1 slot14 p0
+do-hangoff-pole pole3 slot32 p2
 1
-41 5
+28 4
 4
-0 48 -1 0
-0 47 0 1
-0 52 -1 0
-0 51 1 0
-1
-end_operator
-begin_operator
-do-hangoff-pole pole2 slot14 p0
-1
-43 0
-4
-0 49 -1 0
+0 53 -1 0
 0 50 0 1
-0 52 -1 0
-0 51 1 0
+0 54 -1 0
+0 49 1 0
 1
 end_operator
 begin_operator
-do-hangup-pole pole1 slot14 p0
+do-hangup-pole pole2 slot20 p1
 1
-41 5
-4
+43 6
+3
 0 48 0 1
-0 47 -1 0
-0 52 0 1
-0 51 0 2
+0 46 0 1
+0 47 0 1
 1
 end_operator
 begin_operator
-do-hangup-pole pole2 slot14 p0
+do-hangup-pole pole2 slot21 p0
 1
-43 0
-4
-0 49 0 1
-0 50 -1 0
-0 52 0 1
-0 51 0 2
-1
-end_operator
-begin_operator
-do-hangup-pole-stocking pole1 slot1 p1
-1
-41 0
-2
+43 7
+3
 0 48 0 1
 0 44 0 1
-1
-end_operator
-begin_operator
-do-hangup-pole-stocking pole1 slot1 p2
-1
-41 0
-2
-0 48 0 1
 0 45 0 1
 1
 end_operator
 begin_operator
-do-hangup-pole-stocking pole1 slot1 p3
+do-hangup-pole pole2 slot29 p3
 1
-41 0
-2
+43 15
+3
 0 48 0 1
-0 46 0 1
+0 51 0 1
+0 52 0 1
+1
+end_operator
+begin_operator
+do-hangup-pole pole3 slot29 p3
+1
+28 1
+3
+0 53 0 1
+0 51 0 1
+0 52 0 1
+1
+end_operator
+begin_operator
+do-hangup-pole pole3 slot32 p2
+1
+28 4
+4
+0 53 0 1
+0 50 -1 0
+0 54 0 1
+0 49 0 2
 1
 end_operator
 begin_operator
 do-move-pole-forward-1 pole1 slot1 slot2 slot3 slot4 slot5 slot6
-4
+5
+1 0
 6 1
 8 1
 10 1
@@ -576,7 +584,8 @@ do-move-pole-forward-1 pole1 slot1 slot2 slot3 slot4 slot5 slot6
 end_operator
 begin_operator
 do-move-pole-forward-1 pole1 slot10 slot11 slot12 slot13 slot14 slot15
-4
+5
+1 0
 23 1
 24 1
 40 1
@@ -589,7 +598,8 @@ do-move-pole-forward-1 pole1 slot10 slot11 slot12 slot13 slot14 slot15
 end_operator
 begin_operator
 do-move-pole-forward-1 pole1 slot11 slot12 slot13 slot14 slot15 slot16
-4
+5
+1 0
 24 1
 40 1
 42 1
@@ -602,7 +612,8 @@ do-move-pole-forward-1 pole1 slot11 slot12 slot13 slot14 slot15 slot16
 end_operator
 begin_operator
 do-move-pole-forward-1 pole1 slot12 slot13 slot14 slot15 slot16 slot17
-4
+5
+1 0
 40 1
 42 1
 39 1
@@ -615,7 +626,8 @@ do-move-pole-forward-1 pole1 slot12 slot13 slot14 slot15 slot16 slot17
 end_operator
 begin_operator
 do-move-pole-forward-1 pole1 slot13 slot14 slot15 slot16 slot17 slot18
-4
+5
+1 0
 42 1
 39 1
 38 1
@@ -628,7 +640,8 @@ do-move-pole-forward-1 pole1 slot13 slot14 slot15 slot16 slot17 slot18
 end_operator
 begin_operator
 do-move-pole-forward-1 pole1 slot14 slot15 slot16 slot17 slot18 slot19
-4
+5
+1 0
 39 1
 38 1
 37 1
@@ -641,7 +654,8 @@ do-move-pole-forward-1 pole1 slot14 slot15 slot16 slot17 slot18 slot19
 end_operator
 begin_operator
 do-move-pole-forward-1 pole1 slot2 slot3 slot4 slot5 slot6 slot7
-4
+5
+1 0
 8 1
 10 1
 12 1
@@ -654,7 +668,8 @@ do-move-pole-forward-1 pole1 slot2 slot3 slot4 slot5 slot6 slot7
 end_operator
 begin_operator
 do-move-pole-forward-1 pole1 slot3 slot4 slot5 slot6 slot7 slot8
-4
+5
+1 0
 10 1
 12 1
 14 1
@@ -667,7 +682,8 @@ do-move-pole-forward-1 pole1 slot3 slot4 slot5 slot6 slot7 slot8
 end_operator
 begin_operator
 do-move-pole-forward-1 pole1 slot4 slot5 slot6 slot7 slot8 slot9
-4
+5
+1 0
 12 1
 14 1
 16 1
@@ -680,7 +696,8 @@ do-move-pole-forward-1 pole1 slot4 slot5 slot6 slot7 slot8 slot9
 end_operator
 begin_operator
 do-move-pole-forward-1 pole1 slot5 slot6 slot7 slot8 slot9 slot10
-4
+5
+1 0
 20 1
 14 1
 16 1
@@ -693,7 +710,8 @@ do-move-pole-forward-1 pole1 slot5 slot6 slot7 slot8 slot9 slot10
 end_operator
 begin_operator
 do-move-pole-forward-1 pole1 slot6 slot7 slot8 slot9 slot10 slot11
-4
+5
+1 0
 20 1
 22 1
 16 1
@@ -706,7 +724,8 @@ do-move-pole-forward-1 pole1 slot6 slot7 slot8 slot9 slot10 slot11
 end_operator
 begin_operator
 do-move-pole-forward-1 pole1 slot7 slot8 slot9 slot10 slot11 slot12
-4
+5
+1 0
 20 1
 22 1
 23 1
@@ -719,7 +738,8 @@ do-move-pole-forward-1 pole1 slot7 slot8 slot9 slot10 slot11 slot12
 end_operator
 begin_operator
 do-move-pole-forward-1 pole1 slot8 slot9 slot10 slot11 slot12 slot13
-4
+5
+1 0
 20 1
 22 1
 23 1
@@ -732,7 +752,8 @@ do-move-pole-forward-1 pole1 slot8 slot9 slot10 slot11 slot12 slot13
 end_operator
 begin_operator
 do-move-pole-forward-1 pole1 slot9 slot10 slot11 slot12 slot13 slot14
-4
+5
+1 0
 22 1
 23 1
 24 1
@@ -746,7 +767,7 @@ end_operator
 begin_operator
 do-move-pole-forward-1 pole2 slot14 slot15 slot16 slot17 slot18 slot19
 5
-1 0
+0 0
 39 1
 38 1
 37 1
@@ -760,7 +781,7 @@ end_operator
 begin_operator
 do-move-pole-forward-1 pole2 slot15 slot16 slot17 slot18 slot19 slot20
 5
-1 0
+0 0
 38 1
 37 1
 36 1
@@ -774,7 +795,7 @@ end_operator
 begin_operator
 do-move-pole-forward-1 pole2 slot16 slot17 slot18 slot19 slot20 slot21
 5
-1 0
+0 0
 37 1
 36 1
 35 1
@@ -788,7 +809,7 @@ end_operator
 begin_operator
 do-move-pole-forward-1 pole2 slot17 slot18 slot19 slot20 slot21 slot22
 5
-1 0
+0 0
 36 1
 35 1
 34 1
@@ -802,7 +823,7 @@ end_operator
 begin_operator
 do-move-pole-forward-1 pole2 slot18 slot19 slot20 slot21 slot22 slot23
 5
-1 0
+0 0
 35 1
 34 1
 33 1
@@ -816,7 +837,7 @@ end_operator
 begin_operator
 do-move-pole-forward-1 pole2 slot19 slot20 slot21 slot22 slot23 slot24
 5
-1 0
+0 0
 34 1
 33 1
 32 1
@@ -830,7 +851,7 @@ end_operator
 begin_operator
 do-move-pole-forward-1 pole2 slot20 slot21 slot22 slot23 slot24 slot25
 5
-1 0
+0 0
 33 1
 32 1
 31 1
@@ -844,7 +865,7 @@ end_operator
 begin_operator
 do-move-pole-forward-1 pole2 slot21 slot22 slot23 slot24 slot25 slot26
 5
-1 0
+0 0
 32 1
 31 1
 30 1
@@ -858,7 +879,7 @@ end_operator
 begin_operator
 do-move-pole-forward-1 pole2 slot22 slot23 slot24 slot25 slot26 slot27
 5
-1 0
+0 0
 31 1
 30 1
 26 1
@@ -872,7 +893,7 @@ end_operator
 begin_operator
 do-move-pole-forward-1 pole2 slot23 slot24 slot25 slot26 slot27 slot28
 5
-1 0
+0 0
 30 1
 26 1
 25 1
@@ -886,7 +907,7 @@ end_operator
 begin_operator
 do-move-pole-forward-1 pole2 slot24 slot25 slot26 slot27 slot28 slot29
 5
-1 0
+0 0
 26 1
 25 1
 29 1
@@ -900,7 +921,7 @@ end_operator
 begin_operator
 do-move-pole-forward-1 pole2 slot25 slot26 slot27 slot28 slot29 slot30
 5
-1 0
+0 0
 25 1
 29 1
 27 1
@@ -914,7 +935,7 @@ end_operator
 begin_operator
 do-move-pole-forward-1 pole2 slot26 slot27 slot28 slot29 slot30 slot31
 5
-1 0
+0 0
 29 1
 27 1
 21 1
@@ -928,7 +949,7 @@ end_operator
 begin_operator
 do-move-pole-forward-1 pole2 slot27 slot28 slot29 slot30 slot31 slot32
 5
-1 0
+0 0
 27 1
 21 1
 19 1
@@ -942,7 +963,7 @@ end_operator
 begin_operator
 do-move-pole-forward-1 pole2 slot28 slot29 slot30 slot31 slot32 slot33
 5
-1 0
+0 0
 21 1
 19 1
 17 1
@@ -955,8 +976,7 @@ do-move-pole-forward-1 pole2 slot28 slot29 slot30 slot31 slot32 slot33
 end_operator
 begin_operator
 do-move-pole-forward-1 pole3 slot28 slot29 slot30 slot31 slot32 slot33
-5
-0 0
+4
 21 1
 19 1
 17 1
@@ -969,8 +989,7 @@ do-move-pole-forward-1 pole3 slot28 slot29 slot30 slot31 slot32 slot33
 end_operator
 begin_operator
 do-move-pole-forward-1 pole3 slot29 slot30 slot31 slot32 slot33 slot34
-5
-0 0
+4
 19 1
 17 1
 15 1
@@ -983,8 +1002,7 @@ do-move-pole-forward-1 pole3 slot29 slot30 slot31 slot32 slot33 slot34
 end_operator
 begin_operator
 do-move-pole-forward-1 pole3 slot30 slot31 slot32 slot33 slot34 slot35
-5
-0 0
+4
 17 1
 15 1
 13 1
@@ -997,8 +1015,7 @@ do-move-pole-forward-1 pole3 slot30 slot31 slot32 slot33 slot34 slot35
 end_operator
 begin_operator
 do-move-pole-forward-1 pole3 slot31 slot32 slot33 slot34 slot35 slot36
-5
-0 0
+4
 15 1
 13 1
 11 1
@@ -1011,8 +1028,7 @@ do-move-pole-forward-1 pole3 slot31 slot32 slot33 slot34 slot35 slot36
 end_operator
 begin_operator
 do-move-pole-forward-1 pole3 slot32 slot33 slot34 slot35 slot36 slot37
-5
-0 0
+4
 13 1
 11 1
 9 1
@@ -1025,8 +1041,7 @@ do-move-pole-forward-1 pole3 slot32 slot33 slot34 slot35 slot36 slot37
 end_operator
 begin_operator
 do-move-pole-forward-1 pole3 slot33 slot34 slot35 slot36 slot37 slot38
-5
-0 0
+4
 11 1
 9 1
 7 1
@@ -1039,8 +1054,7 @@ do-move-pole-forward-1 pole3 slot33 slot34 slot35 slot36 slot37 slot38
 end_operator
 begin_operator
 do-move-pole-forward-1 pole3 slot34 slot35 slot36 slot37 slot38 slot39
-5
-0 0
+4
 9 1
 7 1
 5 1
@@ -1053,8 +1067,7 @@ do-move-pole-forward-1 pole3 slot34 slot35 slot36 slot37 slot38 slot39
 end_operator
 begin_operator
 do-move-pole-forward-2 pole3 slot35 slot36 slot37 slot38 slot39
-4
-0 0
+3
 7 1
 5 1
 3 1
@@ -1066,8 +1079,7 @@ do-move-pole-forward-2 pole3 slot35 slot36 slot37 slot38 slot39
 end_operator
 begin_operator
 do-move-pole-forward-3 pole3 slot36 slot37 slot38 slot39
-3
-0 0
+2
 5 1
 3 1
 3
@@ -1078,8 +1090,7 @@ do-move-pole-forward-3 pole3 slot36 slot37 slot38 slot39
 end_operator
 begin_operator
 do-move-pole-forward-4 pole3 slot37 slot38 slot39
-2
-0 0
+1
 3 1
 3
 0 28 9 10
@@ -1089,8 +1100,7 @@ do-move-pole-forward-4 pole3 slot37 slot38 slot39
 end_operator
 begin_operator
 do-move-pole-forward-5 pole3 slot38 slot39
-1
-0 0
+0
 3
 0 28 10 11
 0 5 0 1
@@ -1099,7 +1109,8 @@ do-move-pole-forward-5 pole3 slot38 slot39
 end_operator
 begin_operator
 do-move-pole-inverse-1 pole1 slot10 slot9 slot8 slot7 slot6 slot5
-4
+5
+1 0
 10 1
 12 1
 14 1
@@ -1112,7 +1123,8 @@ do-move-pole-inverse-1 pole1 slot10 slot9 slot8 slot7 slot6 slot5
 end_operator
 begin_operator
 do-move-pole-inverse-1 pole1 slot11 slot10 slot9 slot8 slot7 slot6
-4
+5
+1 0
 12 1
 14 1
 16 1
@@ -1125,7 +1137,8 @@ do-move-pole-inverse-1 pole1 slot11 slot10 slot9 slot8 slot7 slot6
 end_operator
 begin_operator
 do-move-pole-inverse-1 pole1 slot12 slot11 slot10 slot9 slot8 slot7
-4
+5
+1 0
 20 1
 14 1
 16 1
@@ -1138,7 +1151,8 @@ do-move-pole-inverse-1 pole1 slot12 slot11 slot10 slot9 slot8 slot7
 end_operator
 begin_operator
 do-move-pole-inverse-1 pole1 slot13 slot12 slot11 slot10 slot9 slot8
-4
+5
+1 0
 20 1
 22 1
 16 1
@@ -1151,7 +1165,8 @@ do-move-pole-inverse-1 pole1 slot13 slot12 slot11 slot10 slot9 slot8
 end_operator
 begin_operator
 do-move-pole-inverse-1 pole1 slot14 slot13 slot12 slot11 slot10 slot9
-4
+5
+1 0
 20 1
 22 1
 23 1
@@ -1164,7 +1179,8 @@ do-move-pole-inverse-1 pole1 slot14 slot13 slot12 slot11 slot10 slot9
 end_operator
 begin_operator
 do-move-pole-inverse-1 pole1 slot15 slot14 slot13 slot12 slot11 slot10
-4
+5
+1 0
 20 1
 22 1
 23 1
@@ -1177,7 +1193,8 @@ do-move-pole-inverse-1 pole1 slot15 slot14 slot13 slot12 slot11 slot10
 end_operator
 begin_operator
 do-move-pole-inverse-1 pole1 slot6 slot5 slot4 slot3 slot2 slot1
-4
+5
+1 0
 2 1
 4 1
 6 1
@@ -1190,7 +1207,8 @@ do-move-pole-inverse-1 pole1 slot6 slot5 slot4 slot3 slot2 slot1
 end_operator
 begin_operator
 do-move-pole-inverse-1 pole1 slot7 slot6 slot5 slot4 slot3 slot2
-4
+5
+1 0
 4 1
 6 1
 8 1
@@ -1203,7 +1221,8 @@ do-move-pole-inverse-1 pole1 slot7 slot6 slot5 slot4 slot3 slot2
 end_operator
 begin_operator
 do-move-pole-inverse-1 pole1 slot8 slot7 slot6 slot5 slot4 slot3
-4
+5
+1 0
 6 1
 8 1
 10 1
@@ -1216,7 +1235,8 @@ do-move-pole-inverse-1 pole1 slot8 slot7 slot6 slot5 slot4 slot3
 end_operator
 begin_operator
 do-move-pole-inverse-1 pole1 slot9 slot8 slot7 slot6 slot5 slot4
-4
+5
+1 0
 8 1
 10 1
 12 1
@@ -1230,7 +1250,7 @@ end_operator
 begin_operator
 do-move-pole-inverse-1 pole2 slot15 slot14 slot13 slot12 slot11 slot10
 5
-1 0
+0 0
 20 1
 22 1
 23 1
@@ -1244,7 +1264,7 @@ end_operator
 begin_operator
 do-move-pole-inverse-1 pole2 slot16 slot15 slot14 slot13 slot12 slot11
 5
-1 0
+0 0
 22 1
 23 1
 24 1
@@ -1258,7 +1278,7 @@ end_operator
 begin_operator
 do-move-pole-inverse-1 pole2 slot17 slot16 slot15 slot14 slot13 slot12
 5
-1 0
+0 0
 23 1
 24 1
 40 1
@@ -1272,7 +1292,7 @@ end_operator
 begin_operator
 do-move-pole-inverse-1 pole2 slot18 slot17 slot16 slot15 slot14 slot13
 5
-1 0
+0 0
 24 1
 40 1
 42 1
@@ -1286,7 +1306,7 @@ end_operator
 begin_operator
 do-move-pole-inverse-1 pole2 slot19 slot18 slot17 slot16 slot15 slot14
 5
-1 0
+0 0
 40 1
 42 1
 39 1
@@ -1300,7 +1320,7 @@ end_operator
 begin_operator
 do-move-pole-inverse-1 pole2 slot20 slot19 slot18 slot17 slot16 slot15
 5
-1 0
+0 0
 42 1
 39 1
 38 1
@@ -1314,7 +1334,7 @@ end_operator
 begin_operator
 do-move-pole-inverse-1 pole2 slot21 slot20 slot19 slot18 slot17 slot16
 5
-1 0
+0 0
 39 1
 38 1
 37 1
@@ -1328,7 +1348,7 @@ end_operator
 begin_operator
 do-move-pole-inverse-1 pole2 slot22 slot21 slot20 slot19 slot18 slot17
 5
-1 0
+0 0
 38 1
 37 1
 36 1
@@ -1342,7 +1362,7 @@ end_operator
 begin_operator
 do-move-pole-inverse-1 pole2 slot23 slot22 slot21 slot20 slot19 slot18
 5
-1 0
+0 0
 37 1
 36 1
 35 1
@@ -1356,7 +1376,7 @@ end_operator
 begin_operator
 do-move-pole-inverse-1 pole2 slot24 slot23 slot22 slot21 slot20 slot19
 5
-1 0
+0 0
 36 1
 35 1
 34 1
@@ -1370,7 +1390,7 @@ end_operator
 begin_operator
 do-move-pole-inverse-1 pole2 slot25 slot24 slot23 slot22 slot21 slot20
 5
-1 0
+0 0
 35 1
 34 1
 33 1
@@ -1384,7 +1404,7 @@ end_operator
 begin_operator
 do-move-pole-inverse-1 pole2 slot26 slot25 slot24 slot23 slot22 slot21
 5
-1 0
+0 0
 34 1
 33 1
 32 1
@@ -1398,7 +1418,7 @@ end_operator
 begin_operator
 do-move-pole-inverse-1 pole2 slot27 slot26 slot25 slot24 slot23 slot22
 5
-1 0
+0 0
 33 1
 32 1
 31 1
@@ -1412,7 +1432,7 @@ end_operator
 begin_operator
 do-move-pole-inverse-1 pole2 slot28 slot27 slot26 slot25 slot24 slot23
 5
-1 0
+0 0
 32 1
 31 1
 30 1
@@ -1426,7 +1446,7 @@ end_operator
 begin_operator
 do-move-pole-inverse-1 pole2 slot29 slot28 slot27 slot26 slot25 slot24
 5
-1 0
+0 0
 31 1
 30 1
 26 1
@@ -1439,8 +1459,7 @@ do-move-pole-inverse-1 pole2 slot29 slot28 slot27 slot26 slot25 slot24
 end_operator
 begin_operator
 do-move-pole-inverse-1 pole3 slot29 slot28 slot27 slot26 slot25 slot24
-5
-0 0
+4
 31 1
 30 1
 26 1
@@ -1453,8 +1472,7 @@ do-move-pole-inverse-1 pole3 slot29 slot28 slot27 slot26 slot25 slot24
 end_operator
 begin_operator
 do-move-pole-inverse-1 pole3 slot30 slot29 slot28 slot27 slot26 slot25
-5
-0 0
+4
 30 1
 26 1
 25 1
@@ -1467,8 +1485,7 @@ do-move-pole-inverse-1 pole3 slot30 slot29 slot28 slot27 slot26 slot25
 end_operator
 begin_operator
 do-move-pole-inverse-1 pole3 slot31 slot30 slot29 slot28 slot27 slot26
-5
-0 0
+4
 26 1
 25 1
 29 1
@@ -1481,8 +1498,7 @@ do-move-pole-inverse-1 pole3 slot31 slot30 slot29 slot28 slot27 slot26
 end_operator
 begin_operator
 do-move-pole-inverse-1 pole3 slot32 slot31 slot30 slot29 slot28 slot27
-5
-0 0
+4
 25 1
 29 1
 27 1
@@ -1495,8 +1511,7 @@ do-move-pole-inverse-1 pole3 slot32 slot31 slot30 slot29 slot28 slot27
 end_operator
 begin_operator
 do-move-pole-inverse-1 pole3 slot33 slot32 slot31 slot30 slot29 slot28
-5
-0 0
+4
 29 1
 27 1
 21 1
@@ -1509,8 +1524,7 @@ do-move-pole-inverse-1 pole3 slot33 slot32 slot31 slot30 slot29 slot28
 end_operator
 begin_operator
 do-move-pole-inverse-1 pole3 slot34 slot33 slot32 slot31 slot30 slot29
-5
-0 0
+4
 27 1
 21 1
 19 1
@@ -1523,8 +1537,7 @@ do-move-pole-inverse-1 pole3 slot34 slot33 slot32 slot31 slot30 slot29
 end_operator
 begin_operator
 do-move-pole-inverse-1 pole3 slot35 slot34 slot33 slot32 slot31 slot30
-5
-0 0
+4
 21 1
 19 1
 17 1
@@ -1537,8 +1550,7 @@ do-move-pole-inverse-1 pole3 slot35 slot34 slot33 slot32 slot31 slot30
 end_operator
 begin_operator
 do-move-pole-inverse-1 pole3 slot36 slot35 slot34 slot33 slot32 slot31
-5
-0 0
+4
 19 1
 17 1
 15 1
@@ -1551,8 +1563,7 @@ do-move-pole-inverse-1 pole3 slot36 slot35 slot34 slot33 slot32 slot31
 end_operator
 begin_operator
 do-move-pole-inverse-1 pole3 slot37 slot36 slot35 slot34 slot33 slot32
-5
-0 0
+4
 17 1
 15 1
 13 1
@@ -1565,8 +1576,7 @@ do-move-pole-inverse-1 pole3 slot37 slot36 slot35 slot34 slot33 slot32
 end_operator
 begin_operator
 do-move-pole-inverse-1 pole3 slot38 slot37 slot36 slot35 slot34 slot33
-5
-0 0
+4
 15 1
 13 1
 11 1
@@ -1579,8 +1589,7 @@ do-move-pole-inverse-1 pole3 slot38 slot37 slot36 slot35 slot34 slot33
 end_operator
 begin_operator
 do-move-pole-inverse-1 pole3 slot39 slot38 slot37 slot36 slot35 slot34
-5
-0 0
+4
 13 1
 11 1
 9 1
@@ -1593,7 +1602,8 @@ do-move-pole-inverse-1 pole3 slot39 slot38 slot37 slot36 slot35 slot34
 end_operator
 begin_operator
 do-move-pole-inverse-2 pole1 slot5 slot4 slot3 slot2 slot1
-3
+4
+1 0
 2 1
 4 1
 6 1
@@ -1605,7 +1615,8 @@ do-move-pole-inverse-2 pole1 slot5 slot4 slot3 slot2 slot1
 end_operator
 begin_operator
 do-move-pole-inverse-3 pole1 slot4 slot3 slot2 slot1
-2
+3
+1 0
 2 1
 4 1
 3
@@ -1616,7 +1627,8 @@ do-move-pole-inverse-3 pole1 slot4 slot3 slot2 slot1
 end_operator
 begin_operator
 do-move-pole-inverse-4 pole1 slot3 slot2 slot1
-1
+2
+1 0
 2 1
 3
 0 41 8 7
@@ -1626,7 +1638,8 @@ do-move-pole-inverse-4 pole1 slot3 slot2 slot1
 end_operator
 begin_operator
 do-move-pole-inverse-5 pole1 slot2 slot1
-0
+1
+1 0
 3
 0 41 7 0
 0 2 1 0
@@ -1634,14 +1647,14 @@ do-move-pole-inverse-5 pole1 slot2 slot1
 1
 end_operator
 begin_operator
-do-start-moving-pole pole2
+do-start-moving-pole pole1
 0
 1
 0 1 1 0
 1
 end_operator
 begin_operator
-do-start-moving-pole pole3
+do-start-moving-pole pole2
 0
 1
 0 0 1 0
@@ -1651,31 +1664,27 @@ end_operator
 begin_SG
 switch 48
 check 0
-switch 41
+switch 43
+check 0
+check 0
+check 0
+check 0
+check 0
+check 0
+check 0
+switch 46
+check 0
+switch 47
+check 0
+check 1
+1
+check 0
+check 0
+check 0
 check 0
 switch 44
 check 0
-check 1
-4
-check 0
 switch 45
-check 0
-check 1
-5
-check 0
-switch 46
-check 0
-check 1
-6
-check 0
-check 0
-check 0
-check 0
-check 0
-check 0
-switch 52
-check 0
-switch 51
 check 0
 check 1
 2
@@ -1690,18 +1699,9 @@ check 0
 check 0
 check 0
 check 0
-check 0
-check 0
-check 0
-check 0
-check 0
-switch 49
-check 0
-switch 43
+switch 51
 check 0
 switch 52
-check 0
-switch 51
 check 0
 check 1
 3
@@ -1711,36 +1711,30 @@ check 0
 check 0
 check 0
 check 0
+switch 53
 check 0
-check 0
-check 0
-check 0
-check 0
-check 0
-check 0
-check 0
-check 0
-check 0
-check 0
-check 0
-check 0
-check 0
-check 0
-check 0
-switch 47
-check 0
-switch 41
-check 0
-check 0
-check 0
-check 0
+switch 28
 check 0
 check 0
 switch 51
 check 0
+switch 52
 check 0
 check 1
-0
+4
+check 0
+check 0
+check 0
+check 0
+check 0
+check 0
+switch 54
+check 0
+switch 49
+check 0
+check 1
+5
+check 0
 check 0
 check 0
 check 0
@@ -1756,21 +1750,17 @@ check 0
 check 0
 switch 50
 check 0
-switch 43
+switch 28
 check 0
-switch 51
+check 0
+check 0
+check 0
+check 0
+switch 49
 check 0
 check 0
 check 1
-1
-check 0
-check 0
-check 0
-check 0
-check 0
-check 0
-check 0
-check 0
+0
 check 0
 check 0
 check 0
@@ -1784,6 +1774,8 @@ check 0
 check 0
 switch 41
 check 0
+switch 1
+check 0
 switch 2
 check 0
 switch 4
@@ -1802,13 +1794,17 @@ switch 12
 check 0
 check 0
 check 1
-7
+6
 check 0
 check 0
 check 0
 check 0
 check 0
 check 0
+check 0
+check 0
+check 0
+switch 1
 check 0
 switch 20
 check 0
@@ -1828,7 +1824,7 @@ switch 42
 check 0
 check 0
 check 1
-8
+7
 check 0
 check 0
 check 0
@@ -1849,13 +1845,17 @@ switch 18
 check 0
 check 0
 check 1
-47
+46
 check 0
 check 0
 check 0
 check 0
 check 0
 check 0
+check 0
+check 0
+check 0
+switch 1
 check 0
 switch 20
 check 0
@@ -1875,7 +1875,7 @@ switch 18
 check 0
 check 0
 check 1
-48
+47
 check 0
 check 0
 check 0
@@ -1900,13 +1900,17 @@ switch 39
 check 0
 check 0
 check 1
-9
+8
 check 0
 check 0
 check 0
 check 0
 check 0
 check 0
+check 0
+check 0
+check 0
+switch 1
 check 0
 switch 20
 check 0
@@ -1926,7 +1930,7 @@ switch 18
 check 0
 check 0
 check 1
-49
+48
 check 0
 check 0
 check 0
@@ -1951,13 +1955,17 @@ switch 38
 check 0
 check 0
 check 1
-10
+9
 check 0
 check 0
 check 0
 check 0
 check 0
 check 0
+check 0
+check 0
+check 0
+switch 1
 check 0
 switch 20
 check 0
@@ -1977,7 +1985,7 @@ switch 18
 check 0
 check 0
 check 1
-50
+49
 check 0
 check 0
 check 0
@@ -2002,13 +2010,17 @@ switch 37
 check 0
 check 0
 check 1
-11
+10
 check 0
 check 0
 check 0
 check 0
 check 0
 check 0
+check 0
+check 0
+check 0
+switch 1
 check 0
 switch 20
 check 0
@@ -2028,7 +2040,7 @@ switch 18
 check 0
 check 0
 check 1
-51
+50
 check 0
 check 0
 check 0
@@ -2053,13 +2065,17 @@ switch 36
 check 0
 check 0
 check 1
-12
+11
 check 0
 check 0
 check 0
 check 0
 check 0
 check 0
+check 0
+check 0
+check 0
+switch 1
 check 0
 switch 20
 check 0
@@ -2079,13 +2095,17 @@ check 0
 switch 42
 check 0
 check 1
-52
+51
 check 0
 check 0
 check 0
 check 0
 check 0
 check 0
+check 0
+check 0
+check 0
+switch 1
 check 0
 switch 2
 check 0
@@ -2093,7 +2113,7 @@ check 0
 switch 4
 check 0
 check 1
-86
+85
 check 0
 check 0
 switch 4
@@ -2114,13 +2134,17 @@ switch 14
 check 0
 check 0
 check 1
-13
+12
 check 0
 check 0
 check 0
 check 0
 check 0
 check 0
+check 0
+check 0
+check 0
+switch 1
 check 0
 switch 2
 check 0
@@ -2131,7 +2155,7 @@ check 0
 switch 6
 check 0
 check 1
-85
+84
 check 0
 check 0
 check 0
@@ -2153,13 +2177,17 @@ switch 16
 check 0
 check 0
 check 1
-14
+13
 check 0
 check 0
 check 0
 check 0
 check 0
 check 0
+check 0
+check 0
+check 0
+switch 1
 check 0
 switch 2
 check 0
@@ -2173,7 +2201,7 @@ check 0
 switch 8
 check 0
 check 1
-84
+83
 check 0
 check 0
 check 0
@@ -2182,6 +2210,57 @@ switch 8
 check 0
 switch 10
 check 0
+check 0
+switch 12
+check 0
+check 0
+switch 14
+check 0
+check 0
+switch 16
+check 0
+check 0
+switch 18
+check 0
+check 0
+check 1
+14
+check 0
+check 0
+check 0
+check 0
+check 0
+check 0
+check 0
+check 0
+check 0
+switch 1
+check 0
+switch 2
+check 0
+check 0
+switch 4
+check 0
+check 0
+switch 6
+check 0
+check 0
+switch 8
+check 0
+check 0
+switch 10
+check 0
+check 1
+82
+check 0
+check 0
+check 0
+check 0
+check 0
+switch 20
+check 0
+check 0
+switch 10
 check 0
 switch 12
 check 0
@@ -2204,6 +2283,10 @@ check 0
 check 0
 check 0
 check 0
+check 0
+check 0
+switch 1
+check 0
 switch 2
 check 0
 check 0
@@ -2218,8 +2301,12 @@ check 0
 check 0
 switch 10
 check 0
+check 0
+switch 12
+check 0
 check 1
-83
+52
+check 0
 check 0
 check 0
 check 0
@@ -2228,10 +2315,10 @@ check 0
 switch 20
 check 0
 check 0
-switch 10
+switch 22
+check 0
 check 0
 switch 12
-check 0
 check 0
 switch 14
 check 0
@@ -2251,56 +2338,9 @@ check 0
 check 0
 check 0
 check 0
-switch 2
 check 0
 check 0
-switch 4
-check 0
-check 0
-switch 6
-check 0
-check 0
-switch 8
-check 0
-check 0
-switch 10
-check 0
-check 0
-switch 12
-check 0
-check 1
-53
-check 0
-check 0
-check 0
-check 0
-check 0
-check 0
-switch 20
-check 0
-check 0
-switch 22
-check 0
-check 0
-switch 12
-check 0
-switch 14
-check 0
-check 0
-switch 16
-check 0
-check 0
-switch 18
-check 0
-check 0
-check 1
-17
-check 0
-check 0
-check 0
-check 0
-check 0
-check 0
+switch 1
 check 0
 switch 20
 check 0
@@ -2320,7 +2360,7 @@ switch 18
 check 0
 check 0
 check 1
-18
+17
 check 0
 check 0
 check 0
@@ -2345,13 +2385,17 @@ check 0
 switch 14
 check 0
 check 1
-54
+53
 check 0
 check 0
 check 0
 check 0
 check 0
 check 0
+check 0
+check 0
+check 0
+switch 1
 check 0
 switch 20
 check 0
@@ -2371,7 +2415,7 @@ switch 18
 check 0
 check 0
 check 1
-19
+18
 check 0
 check 0
 check 0
@@ -2396,13 +2440,17 @@ check 0
 switch 16
 check 0
 check 1
-55
+54
 check 0
 check 0
 check 0
 check 0
 check 0
 check 0
+check 0
+check 0
+check 0
+switch 1
 check 0
 switch 20
 check 0
@@ -2422,7 +2470,7 @@ check 0
 switch 18
 check 0
 check 1
-20
+19
 check 0
 check 0
 check 0
@@ -2447,7 +2495,9 @@ check 0
 switch 18
 check 0
 check 1
-56
+55
+check 0
+check 0
 check 0
 check 0
 check 0
@@ -2457,7 +2507,7 @@ check 0
 check 0
 switch 43
 check 0
-switch 1
+switch 0
 check 0
 switch 40
 check 0
@@ -2477,7 +2527,7 @@ switch 36
 check 0
 check 0
 check 1
-21
+20
 check 0
 check 0
 check 0
@@ -2487,7 +2537,7 @@ check 0
 check 0
 check 0
 check 0
-switch 1
+switch 0
 check 0
 switch 20
 check 0
@@ -2507,7 +2557,7 @@ check 0
 switch 42
 check 0
 check 1
-57
+56
 check 0
 check 0
 check 0
@@ -2532,7 +2582,7 @@ switch 35
 check 0
 check 0
 check 1
-22
+21
 check 0
 check 0
 check 0
@@ -2542,7 +2592,7 @@ check 0
 check 0
 check 0
 check 0
-switch 1
+switch 0
 check 0
 switch 22
 check 0
@@ -2562,7 +2612,7 @@ check 0
 switch 39
 check 0
 check 1
-58
+57
 check 0
 check 0
 check 0
@@ -2587,7 +2637,7 @@ switch 34
 check 0
 check 0
 check 1
-23
+22
 check 0
 check 0
 check 0
@@ -2597,7 +2647,7 @@ check 0
 check 0
 check 0
 check 0
-switch 1
+switch 0
 check 0
 switch 23
 check 0
@@ -2617,7 +2667,7 @@ check 0
 switch 38
 check 0
 check 1
-59
+58
 check 0
 check 0
 check 0
@@ -2642,7 +2692,7 @@ switch 33
 check 0
 check 0
 check 1
-24
+23
 check 0
 check 0
 check 0
@@ -2652,7 +2702,7 @@ check 0
 check 0
 check 0
 check 0
-switch 1
+switch 0
 check 0
 switch 24
 check 0
@@ -2672,7 +2722,7 @@ check 0
 switch 37
 check 0
 check 1
-60
+59
 check 0
 check 0
 check 0
@@ -2697,7 +2747,7 @@ switch 32
 check 0
 check 0
 check 1
-25
+24
 check 0
 check 0
 check 0
@@ -2707,7 +2757,7 @@ check 0
 check 0
 check 0
 check 0
-switch 1
+switch 0
 check 0
 switch 40
 check 0
@@ -2727,7 +2777,7 @@ check 0
 switch 36
 check 0
 check 1
-61
+60
 check 0
 check 0
 check 0
@@ -2752,7 +2802,7 @@ switch 31
 check 0
 check 0
 check 1
-26
+25
 check 0
 check 0
 check 0
@@ -2762,7 +2812,7 @@ check 0
 check 0
 check 0
 check 0
-switch 1
+switch 0
 check 0
 switch 42
 check 0
@@ -2782,7 +2832,7 @@ check 0
 switch 35
 check 0
 check 1
-62
+61
 check 0
 check 0
 check 0
@@ -2807,7 +2857,7 @@ switch 30
 check 0
 check 0
 check 1
-27
+26
 check 0
 check 0
 check 0
@@ -2817,7 +2867,7 @@ check 0
 check 0
 check 0
 check 0
-switch 1
+switch 0
 check 0
 switch 39
 check 0
@@ -2837,7 +2887,7 @@ check 0
 switch 34
 check 0
 check 1
-63
+62
 check 0
 check 0
 check 0
@@ -2862,7 +2912,7 @@ switch 26
 check 0
 check 0
 check 1
-28
+27
 check 0
 check 0
 check 0
@@ -2872,7 +2922,7 @@ check 0
 check 0
 check 0
 check 0
-switch 1
+switch 0
 check 0
 switch 38
 check 0
@@ -2892,7 +2942,7 @@ check 0
 switch 33
 check 0
 check 1
-64
+63
 check 0
 check 0
 check 0
@@ -2917,7 +2967,7 @@ switch 25
 check 0
 check 0
 check 1
-29
+28
 check 0
 check 0
 check 0
@@ -2927,7 +2977,7 @@ check 0
 check 0
 check 0
 check 0
-switch 1
+switch 0
 check 0
 switch 37
 check 0
@@ -2947,7 +2997,7 @@ check 0
 switch 32
 check 0
 check 1
-65
+64
 check 0
 check 0
 check 0
@@ -2972,7 +3022,7 @@ switch 29
 check 0
 check 0
 check 1
-30
+29
 check 0
 check 0
 check 0
@@ -2982,7 +3032,7 @@ check 0
 check 0
 check 0
 check 0
-switch 1
+switch 0
 check 0
 switch 36
 check 0
@@ -3002,7 +3052,7 @@ check 0
 switch 31
 check 0
 check 1
-66
+65
 check 0
 check 0
 check 0
@@ -3027,7 +3077,7 @@ switch 27
 check 0
 check 0
 check 1
-31
+30
 check 0
 check 0
 check 0
@@ -3037,7 +3087,7 @@ check 0
 check 0
 check 0
 check 0
-switch 1
+switch 0
 check 0
 switch 35
 check 0
@@ -3057,7 +3107,7 @@ check 0
 switch 30
 check 0
 check 1
-67
+66
 check 0
 check 0
 check 0
@@ -3082,7 +3132,7 @@ switch 21
 check 0
 check 0
 check 1
-32
+31
 check 0
 check 0
 check 0
@@ -3092,7 +3142,7 @@ check 0
 check 0
 check 0
 check 0
-switch 1
+switch 0
 check 0
 switch 34
 check 0
@@ -3112,7 +3162,7 @@ check 0
 switch 26
 check 0
 check 1
-68
+67
 check 0
 check 0
 check 0
@@ -3137,7 +3187,7 @@ switch 19
 check 0
 check 0
 check 1
-33
+32
 check 0
 check 0
 check 0
@@ -3147,7 +3197,7 @@ check 0
 check 0
 check 0
 check 0
-switch 1
+switch 0
 check 0
 switch 33
 check 0
@@ -3167,7 +3217,7 @@ check 0
 switch 25
 check 0
 check 1
-69
+68
 check 0
 check 0
 check 0
@@ -3192,7 +3242,7 @@ switch 17
 check 0
 check 0
 check 1
-34
+33
 check 0
 check 0
 check 0
@@ -3202,7 +3252,7 @@ check 0
 check 0
 check 0
 check 0
-switch 1
+switch 0
 check 0
 switch 32
 check 0
@@ -3222,7 +3272,7 @@ check 0
 switch 29
 check 0
 check 1
-70
+69
 check 0
 check 0
 check 0
@@ -3247,7 +3297,7 @@ switch 15
 check 0
 check 0
 check 1
-35
+34
 check 0
 check 0
 check 0
@@ -3257,7 +3307,7 @@ check 0
 check 0
 check 0
 check 0
-switch 1
+switch 0
 check 0
 switch 31
 check 0
@@ -3277,7 +3327,7 @@ check 0
 switch 27
 check 0
 check 1
-71
+70
 check 0
 check 0
 check 0
@@ -3289,8 +3339,6 @@ check 0
 check 0
 switch 28
 check 0
-switch 0
-check 0
 switch 29
 check 0
 switch 27
@@ -3309,17 +3357,13 @@ switch 15
 check 0
 check 0
 check 1
-36
+35
 check 0
 check 0
 check 0
 check 0
 check 0
 check 0
-check 0
-check 0
-check 0
-switch 0
 check 0
 switch 31
 check 0
@@ -3339,7 +3383,7 @@ check 0
 switch 27
 check 0
 check 1
-72
+71
 check 0
 check 0
 check 0
@@ -3364,17 +3408,13 @@ switch 13
 check 0
 check 0
 check 1
-37
+36
 check 0
 check 0
 check 0
 check 0
 check 0
 check 0
-check 0
-check 0
-check 0
-switch 0
 check 0
 switch 30
 check 0
@@ -3394,7 +3434,7 @@ check 0
 switch 21
 check 0
 check 1
-73
+72
 check 0
 check 0
 check 0
@@ -3419,17 +3459,13 @@ switch 11
 check 0
 check 0
 check 1
-38
+37
 check 0
 check 0
 check 0
 check 0
 check 0
 check 0
-check 0
-check 0
-check 0
-switch 0
 check 0
 switch 26
 check 0
@@ -3449,7 +3485,7 @@ check 0
 switch 19
 check 0
 check 1
-74
+73
 check 0
 check 0
 check 0
@@ -3474,17 +3510,13 @@ switch 9
 check 0
 check 0
 check 1
-39
+38
 check 0
 check 0
 check 0
 check 0
 check 0
 check 0
-check 0
-check 0
-check 0
-switch 0
 check 0
 switch 25
 check 0
@@ -3504,7 +3536,7 @@ check 0
 switch 17
 check 0
 check 1
-75
+74
 check 0
 check 0
 check 0
@@ -3529,17 +3561,13 @@ switch 7
 check 0
 check 0
 check 1
-40
+39
 check 0
 check 0
 check 0
 check 0
 check 0
 check 0
-check 0
-check 0
-check 0
-switch 0
 check 0
 switch 29
 check 0
@@ -3559,7 +3587,7 @@ check 0
 switch 15
 check 0
 check 1
-76
+75
 check 0
 check 0
 check 0
@@ -3584,17 +3612,13 @@ switch 5
 check 0
 check 0
 check 1
-41
+40
 check 0
 check 0
 check 0
 check 0
 check 0
 check 0
-check 0
-check 0
-check 0
-switch 0
 check 0
 switch 27
 check 0
@@ -3614,7 +3638,7 @@ check 0
 switch 13
 check 0
 check 1
-77
+76
 check 0
 check 0
 check 0
@@ -3639,17 +3663,13 @@ switch 3
 check 0
 check 0
 check 1
-42
+41
 check 0
 check 0
 check 0
 check 0
 check 0
 check 0
-check 0
-check 0
-check 0
-switch 0
 check 0
 switch 21
 check 0
@@ -3669,7 +3689,7 @@ check 0
 switch 11
 check 0
 check 1
-78
+77
 check 0
 check 0
 check 0
@@ -3691,16 +3711,12 @@ switch 3
 check 0
 check 0
 check 1
-43
+42
 check 0
 check 0
 check 0
 check 0
 check 0
-check 0
-check 0
-check 0
-switch 0
 check 0
 switch 19
 check 0
@@ -3720,7 +3736,7 @@ check 0
 switch 9
 check 0
 check 1
-79
+78
 check 0
 check 0
 check 0
@@ -3739,15 +3755,11 @@ switch 3
 check 0
 check 0
 check 1
-44
+43
 check 0
 check 0
 check 0
 check 0
-check 0
-check 0
-check 0
-switch 0
 check 0
 switch 17
 check 0
@@ -3767,7 +3779,7 @@ check 0
 switch 7
 check 0
 check 1
-80
+79
 check 0
 check 0
 check 0
@@ -3783,14 +3795,10 @@ switch 3
 check 0
 check 0
 check 1
-45
+44
 check 0
 check 0
 check 0
-check 0
-check 0
-check 0
-switch 0
 check 0
 switch 15
 check 0
@@ -3810,7 +3818,7 @@ check 0
 switch 5
 check 0
 check 1
-81
+80
 check 0
 check 0
 check 0
@@ -3823,13 +3831,9 @@ switch 3
 check 0
 check 0
 check 1
-46
+45
 check 0
 check 0
-check 0
-check 0
-check 0
-switch 0
 check 0
 switch 13
 check 0
@@ -3849,9 +3853,7 @@ check 0
 switch 3
 check 0
 check 1
-82
-check 0
-check 0
+81
 check 0
 check 0
 check 0
@@ -3863,34 +3865,35 @@ switch 1
 check 0
 check 0
 check 1
-87
+86
 switch 0
 check 0
 check 0
 check 1
-88
+87
 check 0
 end_SG
 begin_DTG
 0
 1
 0
-88
-0
-end_DTG
-begin_DTG
-0
-1
-0
 87
 0
 end_DTG
 begin_DTG
+0
+1
+0
+86
+0
+end_DTG
+begin_DTG
 1
 1
-7
 6
+7
 41 0
+1 0
 4 1
 6 1
 8 1
@@ -3898,18 +3901,18 @@ begin_DTG
 12 1
 1
 0
-86
-2
+85
+3
 41 7
+1 0
 4 0
 end_DTG
 begin_DTG
 1
 1
-82
-7
+81
+6
 28 11
-0 0
 13 1
 11 1
 9 1
@@ -3917,23 +3920,24 @@ begin_DTG
 5 1
 1
 0
-46
-3
+45
+2
 28 10
-0 0
 5 0
 end_DTG
 begin_DTG
 2
 1
-86
-2
+85
+3
 41 7
+1 0
 2 1
 1
-13
-6
+12
+7
 41 7
+1 0
 6 1
 8 1
 10 1
@@ -3941,15 +3945,17 @@ begin_DTG
 14 1
 2
 0
-85
-3
+84
+4
 41 8
+1 0
 2 1
 6 0
 0
-7
 6
+7
 41 0
+1 0
 2 0
 6 1
 8 1
@@ -3959,16 +3965,14 @@ end_DTG
 begin_DTG
 2
 1
-46
-3
+45
+2
 28 10
-0 0
 3 1
 1
-81
-7
+80
+6
 28 10
-0 0
 15 1
 13 1
 11 1
@@ -3976,17 +3980,15 @@ begin_DTG
 7 1
 2
 0
-45
-4
+44
+3
 28 9
-0 0
 7 0
 3 1
 0
-82
-7
+81
+6
 28 11
-0 0
 13 1
 11 1
 9 1
@@ -3996,15 +3998,17 @@ end_DTG
 begin_DTG
 2
 1
-85
-3
+84
+4
 41 8
+1 0
 2 1
 4 1
 1
-14
-6
+13
+7
 41 8
+1 0
 8 1
 10 1
 12 1
@@ -4012,16 +4016,18 @@ begin_DTG
 16 1
 2
 0
-84
-4
+83
+5
 41 9
+1 0
 2 1
 4 1
 8 0
 0
-13
-6
+12
+7
 41 7
+1 0
 4 0
 8 1
 10 1
@@ -4031,17 +4037,15 @@ end_DTG
 begin_DTG
 2
 1
-45
-4
+44
+3
 28 9
-0 0
 5 1
 3 1
 1
-80
-7
+79
+6
 28 9
-0 0
 17 1
 15 1
 13 1
@@ -4049,18 +4053,16 @@ begin_DTG
 9 1
 2
 0
-44
-5
+43
+4
 28 8
-0 0
 9 0
 5 1
 3 1
 0
-81
-7
+80
+6
 28 10
-0 0
 15 1
 13 1
 11 1
@@ -4070,16 +4072,18 @@ end_DTG
 begin_DTG
 2
 1
-84
-4
+83
+5
 41 9
+1 0
 2 1
 4 1
 6 1
 1
-15
-6
+14
+7
 41 9
+1 0
 10 1
 12 1
 14 1
@@ -4087,17 +4091,19 @@ begin_DTG
 18 1
 2
 0
-83
-5
+82
+6
 41 10
+1 0
 2 1
 4 1
 6 1
 10 0
 0
-14
-6
+13
+7
 41 8
+1 0
 6 0
 10 1
 12 1
@@ -4107,18 +4113,16 @@ end_DTG
 begin_DTG
 2
 1
-44
-5
+43
+4
 28 8
-0 0
 7 1
 5 1
 3 1
 1
-79
-7
+78
+6
 28 8
-0 0
 19 1
 17 1
 15 1
@@ -4126,19 +4130,17 @@ begin_DTG
 11 1
 2
 0
-43
-6
+42
+5
 28 7
-0 0
 11 0
 7 1
 5 1
 3 1
 0
-80
-7
+79
+6
 28 9
-0 0
 17 1
 15 1
 13 1
@@ -4148,17 +4150,19 @@ end_DTG
 begin_DTG
 2
 1
-83
-5
+82
+6
 41 10
+1 0
 2 1
 4 1
 6 1
 8 1
 1
-16
-6
+15
+7
 41 10
+1 0
 20 1
 12 1
 14 1
@@ -4166,18 +4170,20 @@ begin_DTG
 18 1
 2
 0
-15
-6
+14
+7
 41 9
+1 0
 8 0
 12 1
 14 1
 16 1
 18 1
 0
-53
-6
+52
+7
 41 11
+1 0
 2 1
 4 1
 6 1
@@ -4187,19 +4193,17 @@ end_DTG
 begin_DTG
 2
 1
-43
-6
+42
+5
 28 7
-0 0
 9 1
 7 1
 5 1
 3 1
 1
-78
-7
+77
+6
 28 7
-0 0
 21 1
 19 1
 17 1
@@ -4207,20 +4211,18 @@ begin_DTG
 13 1
 2
 0
-42
-7
+41
+6
 28 6
-0 0
 13 0
 9 1
 7 1
 5 1
 3 1
 0
-79
-7
+78
+6
 28 8
-0 0
 19 1
 17 1
 15 1
@@ -4230,18 +4232,20 @@ end_DTG
 begin_DTG
 2
 1
-17
-6
+16
+7
 41 11
+1 0
 20 1
 22 1
 14 1
 16 1
 18 1
 1
-53
-6
+52
+7
 41 11
+1 0
 2 1
 4 1
 6 1
@@ -4249,18 +4253,20 @@ begin_DTG
 10 1
 2
 0
-16
-6
+15
+7
 41 10
+1 0
 20 1
 10 0
 14 1
 16 1
 18 1
 0
-54
-6
+53
+7
 41 12
+1 0
 4 1
 6 1
 8 1
@@ -4270,20 +4276,18 @@ end_DTG
 begin_DTG
 2
 1
-42
-7
+41
+6
 28 6
-0 0
 11 1
 9 1
 7 1
 5 1
 3 1
 1
-77
-7
+76
+6
 28 6
-0 0
 27 1
 21 1
 19 1
@@ -4291,20 +4295,18 @@ begin_DTG
 15 1
 2
 0
-41
-7
+40
+6
 28 5
-0 0
 15 0
 11 1
 9 1
 7 1
 5 1
 0
-78
-7
+77
+6
 28 7
-0 0
 21 1
 19 1
 17 1
@@ -4314,18 +4316,20 @@ end_DTG
 begin_DTG
 2
 1
-18
-6
+17
+7
 41 12
+1 0
 20 1
 22 1
 23 1
 16 1
 18 1
 1
-54
-6
+53
+7
 41 12
+1 0
 4 1
 6 1
 8 1
@@ -4333,18 +4337,20 @@ begin_DTG
 12 1
 2
 0
-17
-6
+16
+7
 41 11
+1 0
 20 1
 22 1
 12 0
 16 1
 18 1
 0
-55
-6
+54
+7
 41 13
+1 0
 6 1
 8 1
 10 1
@@ -4354,20 +4360,18 @@ end_DTG
 begin_DTG
 2
 1
-41
-7
+40
+6
 28 5
-0 0
 13 1
 11 1
 9 1
 7 1
 5 1
 1
-76
-7
+75
+6
 28 5
-0 0
 29 1
 27 1
 21 1
@@ -4375,20 +4379,18 @@ begin_DTG
 17 1
 2
 0
-40
-7
+39
+6
 28 4
-0 0
 17 0
 13 1
 11 1
 9 1
 7 1
 0
-77
-7
+76
+6
 28 6
-0 0
 27 1
 21 1
 19 1
@@ -4398,18 +4400,20 @@ end_DTG
 begin_DTG
 2
 1
-19
-6
+18
+7
 41 13
+1 0
 20 1
 22 1
 23 1
 24 1
 18 1
 1
-55
-6
+54
+7
 41 13
+1 0
 6 1
 8 1
 10 1
@@ -4417,18 +4421,20 @@ begin_DTG
 14 1
 2
 0
-18
-6
+17
+7
 41 12
+1 0
 20 1
 22 1
 23 1
 14 0
 18 1
 0
-56
-6
+55
+7
 41 14
+1 0
 8 1
 10 1
 12 1
@@ -4438,20 +4444,18 @@ end_DTG
 begin_DTG
 2
 1
-40
-7
+39
+6
 28 4
-0 0
 15 1
 13 1
 11 1
 9 1
 7 1
 1
-75
-7
+74
+6
 28 4
-0 0
 25 1
 29 1
 27 1
@@ -4459,20 +4463,18 @@ begin_DTG
 19 1
 2
 0
-39
-7
+38
+6
 28 3
-0 0
 19 0
 15 1
 13 1
 11 1
 9 1
 0
-76
-7
+75
+6
 28 5
-0 0
 29 1
 27 1
 21 1
@@ -4482,18 +4484,20 @@ end_DTG
 begin_DTG
 2
 1
-20
-6
+19
+7
 41 14
+1 0
 20 1
 22 1
 23 1
 24 1
 40 1
 1
-56
-6
+55
+7
 41 14
+1 0
 8 1
 10 1
 12 1
@@ -4501,18 +4505,20 @@ begin_DTG
 16 1
 2
 0
-19
-6
+18
+7
 41 13
+1 0
 20 1
 22 1
 23 1
 24 1
 16 0
 0
-47
-6
+46
+7
 41 1
+1 0
 20 0
 10 1
 12 1
@@ -4522,20 +4528,18 @@ end_DTG
 begin_DTG
 2
 1
-39
-7
+38
+6
 28 3
-0 0
 17 1
 15 1
 13 1
 11 1
 9 1
 1
-74
-7
+73
+6
 28 3
-0 0
 26 1
 25 1
 29 1
@@ -4543,20 +4547,18 @@ begin_DTG
 21 1
 2
 0
-38
-7
+37
+6
 28 2
-0 0
 21 0
 17 1
 15 1
 13 1
 11 1
 0
-75
-7
+74
+6
 28 4
-0 0
 25 1
 29 1
 27 1
@@ -4566,18 +4568,20 @@ end_DTG
 begin_DTG
 2
 1
-8
-6
+7
+7
 41 1
+1 0
 22 1
 23 1
 24 1
 40 1
 42 1
 1
-47
-6
+46
+7
 41 1
+1 0
 10 1
 12 1
 14 1
@@ -4585,18 +4589,20 @@ begin_DTG
 18 1
 2
 0
-20
-6
+19
+7
 41 14
+1 0
 22 1
 23 1
 24 1
 40 1
 18 0
 0
-48
-6
+47
+7
 41 2
+1 0
 22 0
 12 1
 14 1
@@ -4606,20 +4612,18 @@ end_DTG
 begin_DTG
 2
 1
-38
-7
+37
+6
 28 2
-0 0
 19 1
 17 1
 15 1
 13 1
 11 1
 1
-73
-7
+72
+6
 28 2
-0 0
 30 1
 26 1
 25 1
@@ -4627,20 +4631,18 @@ begin_DTG
 27 1
 2
 0
-37
-7
+36
+6
 28 1
-0 0
 27 0
 19 1
 17 1
 15 1
 13 1
 0
-74
-7
+73
+6
 28 3
-0 0
 26 1
 25 1
 29 1
@@ -4650,18 +4652,20 @@ end_DTG
 begin_DTG
 2
 1
-9
-6
+8
+7
 41 2
+1 0
 23 1
 24 1
 40 1
 42 1
 39 1
 1
-48
-6
+47
+7
 41 2
+1 0
 20 1
 12 1
 14 1
@@ -4669,18 +4673,20 @@ begin_DTG
 18 1
 2
 0
-8
-6
+7
+7
 41 1
+1 0
 20 0
 23 1
 24 1
 40 1
 42 1
 0
-49
-6
+48
+7
 41 3
+1 0
 20 1
 23 0
 14 1
@@ -4690,18 +4696,20 @@ end_DTG
 begin_DTG
 2
 1
-10
-6
+9
+7
 41 3
+1 0
 24 1
 40 1
 42 1
 39 1
 38 1
 1
-49
-6
+48
+7
 41 3
+1 0
 20 1
 22 1
 14 1
@@ -4709,18 +4717,20 @@ begin_DTG
 18 1
 2
 0
-9
-6
+8
+7
 41 2
+1 0
 22 0
 24 1
 40 1
 42 1
 39 1
 0
-50
-6
+49
+7
 41 4
+1 0
 20 1
 22 1
 24 0
@@ -4730,18 +4740,20 @@ end_DTG
 begin_DTG
 2
 1
-11
-6
+10
+7
 41 4
+1 0
 40 1
 42 1
 39 1
 38 1
 37 1
 1
-50
-6
+49
+7
 41 4
+1 0
 20 1
 22 1
 23 1
@@ -4749,18 +4761,20 @@ begin_DTG
 18 1
 2
 0
-10
-6
+9
+7
 41 3
+1 0
 23 0
 40 1
 42 1
 39 1
 38 1
 0
-51
-6
+50
+7
 41 5
+1 0
 20 1
 22 1
 23 1
@@ -4770,20 +4784,20 @@ end_DTG
 begin_DTG
 2
 1
-34
+33
 7
 43 13
-1 0
+0 0
 29 1
 27 1
 21 1
 19 1
 17 1
 1
-69
+68
 7
 43 13
-1 0
+0 0
 33 1
 32 1
 31 1
@@ -4791,20 +4805,20 @@ begin_DTG
 26 1
 2
 0
-33
+32
 7
 43 12
-1 0
+0 0
 26 0
 29 1
 27 1
 21 1
 19 1
 0
-70
+69
 7
 43 14
-1 0
+0 0
 32 1
 31 1
 30 1
@@ -4814,20 +4828,20 @@ end_DTG
 begin_DTG
 2
 1
-33
+32
 7
 43 12
-1 0
+0 0
 25 1
 29 1
 27 1
 21 1
 19 1
 1
-68
+67
 7
 43 12
-1 0
+0 0
 34 1
 33 1
 32 1
@@ -4835,20 +4849,20 @@ begin_DTG
 30 1
 2
 0
-32
+31
 7
 43 11
-1 0
+0 0
 30 0
 25 1
 29 1
 27 1
 21 1
 0
-69
+68
 7
 43 13
-1 0
+0 0
 33 1
 32 1
 31 1
@@ -4858,10 +4872,9 @@ end_DTG
 begin_DTG
 3
 1
-37
-7
+36
+6
 28 1
-0 0
 21 1
 19 1
 17 1
@@ -4869,18 +4882,17 @@ begin_DTG
 13 1
 1
 71
-7
-43 15
-1 0
+6
+28 1
 31 1
 30 1
 26 1
 25 1
 29 1
 1
-72
+70
 7
-28 1
+43 15
 0 0
 31 1
 30 1
@@ -4890,41 +4902,38 @@ begin_DTG
 3
 0
 35
-7
-43 14
-1 0
-29 0
-21 1
-19 1
-17 1
-15 1
-0
-36
-7
+6
 28 0
-0 0
 29 0
 21 1
 19 1
 17 1
 15 1
 0
-73
-7
+72
+6
 28 2
-0 0
 30 1
 26 1
 25 1
 29 1
 21 0
+0
+34
+7
+43 14
+0 0
+29 0
+21 1
+19 1
+17 1
+15 1
 end_DTG
 begin_DTG
 1
 1
-36
-7
-0 0
+35
+6
 29 0
 27 1
 21 1
@@ -4933,9 +4942,8 @@ begin_DTG
 15 1
 2
 0
-72
-7
-0 0
+71
+6
 31 1
 30 1
 26 1
@@ -4943,9 +4951,8 @@ begin_DTG
 29 1
 27 0
 2
-37
-7
-0 0
+36
+6
 27 0
 21 1
 19 1
@@ -4954,9 +4961,8 @@ begin_DTG
 13 1
 2
 1
-73
-7
-0 0
+72
+6
 30 1
 26 1
 25 1
@@ -4964,9 +4970,8 @@ begin_DTG
 27 1
 21 0
 3
-38
-7
-0 0
+37
+6
 21 0
 19 1
 17 1
@@ -4975,9 +4980,8 @@ begin_DTG
 11 1
 2
 2
-74
-7
-0 0
+73
+6
 26 1
 25 1
 29 1
@@ -4985,9 +4989,8 @@ begin_DTG
 21 1
 19 0
 4
-39
-7
-0 0
+38
+6
 19 0
 17 1
 15 1
@@ -4996,9 +4999,8 @@ begin_DTG
 9 1
 2
 3
-75
-7
-0 0
+74
+6
 25 1
 29 1
 27 1
@@ -5006,9 +5008,8 @@ begin_DTG
 19 1
 17 0
 5
-40
-7
-0 0
+39
+6
 17 0
 15 1
 13 1
@@ -5017,9 +5018,8 @@ begin_DTG
 7 1
 2
 4
-76
-7
-0 0
+75
+6
 29 1
 27 1
 21 1
@@ -5027,9 +5027,8 @@ begin_DTG
 17 1
 15 0
 6
-41
-7
-0 0
+40
+6
 15 0
 13 1
 11 1
@@ -5038,9 +5037,8 @@ begin_DTG
 5 1
 2
 5
-77
-7
-0 0
+76
+6
 27 1
 21 1
 19 1
@@ -5048,9 +5046,8 @@ begin_DTG
 15 1
 13 0
 7
-42
-7
-0 0
+41
+6
 13 0
 11 1
 9 1
@@ -5059,9 +5056,8 @@ begin_DTG
 3 1
 2
 6
-78
-7
-0 0
+77
+6
 21 1
 19 1
 17 1
@@ -5069,9 +5065,8 @@ begin_DTG
 13 1
 11 0
 8
-43
-6
-0 0
+42
+5
 11 0
 9 1
 7 1
@@ -5079,9 +5074,8 @@ begin_DTG
 3 1
 2
 7
-79
-7
-0 0
+78
+6
 19 1
 17 1
 15 1
@@ -5089,18 +5083,16 @@ begin_DTG
 11 1
 9 0
 9
-44
-5
-0 0
+43
+4
 9 0
 7 1
 5 1
 3 1
 2
 8
-80
-7
-0 0
+79
+6
 17 1
 15 1
 13 1
@@ -5108,17 +5100,15 @@ begin_DTG
 9 1
 7 0
 10
-45
-4
-0 0
+44
+3
 7 0
 5 1
 3 1
 2
 9
-81
-7
-0 0
+80
+6
 15 1
 13 1
 11 1
@@ -5126,16 +5116,14 @@ begin_DTG
 7 1
 5 0
 11
-46
-3
-0 0
+45
+2
 5 0
 3 1
 1
 10
-82
-7
-0 0
+81
+6
 13 1
 11 1
 9 1
@@ -5147,18 +5135,17 @@ begin_DTG
 3
 1
 35
-7
-43 14
-1 0
+6
+28 0
 27 1
 21 1
 19 1
 17 1
 15 1
 1
-36
+34
 7
-28 0
+43 14
 0 0
 27 1
 21 1
@@ -5166,10 +5153,10 @@ begin_DTG
 17 1
 15 1
 1
-70
+69
 7
 43 14
-1 0
+0 0
 32 1
 31 1
 30 1
@@ -5177,29 +5164,28 @@ begin_DTG
 25 1
 3
 0
-34
-7
-43 13
-1 0
-25 0
-27 1
-21 1
-19 1
-17 1
-0
 71
-7
-43 15
-1 0
+6
+28 1
 31 1
 30 1
 26 1
 25 1
 27 0
 0
-72
+33
 7
-28 1
+43 13
+0 0
+25 0
+27 1
+21 1
+19 1
+17 1
+0
+70
+7
+43 15
 0 0
 31 1
 30 1
@@ -5210,20 +5196,20 @@ end_DTG
 begin_DTG
 2
 1
-32
+31
 7
 43 11
-1 0
+0 0
 26 1
 25 1
 29 1
 27 1
 21 1
 1
-67
+66
 7
 43 11
-1 0
+0 0
 35 1
 34 1
 33 1
@@ -5231,20 +5217,20 @@ begin_DTG
 31 1
 2
 0
-31
+30
 7
 43 10
-1 0
+0 0
 31 0
 26 1
 25 1
 29 1
 27 1
 0
-68
+67
 7
 43 12
-1 0
+0 0
 34 1
 33 1
 32 1
@@ -5254,20 +5240,20 @@ end_DTG
 begin_DTG
 2
 1
-31
+30
 7
 43 10
-1 0
+0 0
 30 1
 26 1
 25 1
 29 1
 27 1
 1
-66
+65
 7
 43 10
-1 0
+0 0
 36 1
 35 1
 34 1
@@ -5275,20 +5261,20 @@ begin_DTG
 32 1
 2
 0
-30
+29
 7
 43 9
-1 0
+0 0
 32 0
 30 1
 26 1
 25 1
 29 1
 0
-67
+66
 7
 43 11
-1 0
+0 0
 35 1
 34 1
 33 1
@@ -5298,20 +5284,20 @@ end_DTG
 begin_DTG
 2
 1
-30
+29
 7
 43 9
-1 0
+0 0
 31 1
 30 1
 26 1
 25 1
 29 1
 1
-65
+64
 7
 43 9
-1 0
+0 0
 37 1
 36 1
 35 1
@@ -5319,20 +5305,20 @@ begin_DTG
 33 1
 2
 0
-29
+28
 7
 43 8
-1 0
+0 0
 33 0
 31 1
 30 1
 26 1
 25 1
 0
-66
+65
 7
 43 10
-1 0
+0 0
 36 1
 35 1
 34 1
@@ -5342,20 +5328,20 @@ end_DTG
 begin_DTG
 2
 1
-29
+28
 7
 43 8
-1 0
+0 0
 32 1
 31 1
 30 1
 26 1
 25 1
 1
-64
+63
 7
 43 8
-1 0
+0 0
 38 1
 37 1
 36 1
@@ -5363,20 +5349,20 @@ begin_DTG
 34 1
 2
 0
-28
+27
 7
 43 7
-1 0
+0 0
 34 0
 32 1
 31 1
 30 1
 26 1
 0
-65
+64
 7
 43 9
-1 0
+0 0
 37 1
 36 1
 35 1
@@ -5386,20 +5372,20 @@ end_DTG
 begin_DTG
 2
 1
-28
+27
 7
 43 7
-1 0
+0 0
 33 1
 32 1
 31 1
 30 1
 26 1
 1
-63
+62
 7
 43 7
-1 0
+0 0
 39 1
 38 1
 37 1
@@ -5407,20 +5393,20 @@ begin_DTG
 35 1
 2
 0
-27
+26
 7
 43 6
-1 0
+0 0
 35 0
 33 1
 32 1
 31 1
 30 1
 0
-64
+63
 7
 43 8
-1 0
+0 0
 38 1
 37 1
 36 1
@@ -5430,20 +5416,20 @@ end_DTG
 begin_DTG
 2
 1
-27
+26
 7
 43 6
-1 0
+0 0
 34 1
 33 1
 32 1
 31 1
 30 1
 1
-62
+61
 7
 43 6
-1 0
+0 0
 42 1
 39 1
 38 1
@@ -5451,20 +5437,20 @@ begin_DTG
 36 1
 2
 0
-26
+25
 7
 43 5
-1 0
+0 0
 36 0
 34 1
 33 1
 32 1
 31 1
 0
-63
+62
 7
 43 7
-1 0
+0 0
 39 1
 38 1
 37 1
@@ -5474,20 +5460,20 @@ end_DTG
 begin_DTG
 2
 1
-26
+25
 7
 43 5
-1 0
+0 0
 35 1
 34 1
 33 1
 32 1
 31 1
 1
-61
+60
 7
 43 5
-1 0
+0 0
 40 1
 42 1
 39 1
@@ -5495,20 +5481,20 @@ begin_DTG
 37 1
 2
 0
-25
+24
 7
 43 4
-1 0
+0 0
 37 0
 35 1
 34 1
 33 1
 32 1
 0
-62
+61
 7
 43 6
-1 0
+0 0
 42 1
 39 1
 38 1
@@ -5518,20 +5504,20 @@ end_DTG
 begin_DTG
 2
 1
-25
+24
 7
 43 4
-1 0
+0 0
 36 1
 35 1
 34 1
 33 1
 32 1
 1
-60
+59
 7
 43 4
-1 0
+0 0
 24 1
 40 1
 42 1
@@ -5539,20 +5525,20 @@ begin_DTG
 38 1
 2
 0
-24
+23
 7
 43 3
-1 0
+0 0
 38 0
 36 1
 35 1
 34 1
 33 1
 0
-61
+60
 7
 43 5
-1 0
+0 0
 40 1
 42 1
 39 1
@@ -5562,20 +5548,20 @@ end_DTG
 begin_DTG
 2
 1
-24
+23
 7
 43 3
-1 0
+0 0
 37 1
 36 1
 35 1
 34 1
 33 1
 1
-59
+58
 7
 43 3
-1 0
+0 0
 23 1
 24 1
 40 1
@@ -5583,20 +5569,20 @@ begin_DTG
 39 1
 2
 0
-23
+22
 7
 43 2
-1 0
+0 0
 39 0
 37 1
 36 1
 35 1
 34 1
 0
-60
+59
 7
 43 4
-1 0
+0 0
 24 1
 40 1
 42 1
@@ -5606,20 +5592,20 @@ end_DTG
 begin_DTG
 2
 1
-23
+22
 7
 43 2
-1 0
+0 0
 38 1
 37 1
 36 1
 35 1
 34 1
 1
-58
+57
 7
 43 2
-1 0
+0 0
 22 1
 23 1
 24 1
@@ -5627,20 +5613,20 @@ begin_DTG
 42 1
 2
 0
-22
+21
 7
 43 1
-1 0
+0 0
 42 0
 38 1
 37 1
 36 1
 35 1
 0
-59
+58
 7
 43 3
-1 0
+0 0
 23 1
 24 1
 40 1
@@ -5650,57 +5636,61 @@ end_DTG
 begin_DTG
 3
 1
-12
-6
-41 5
-42 1
-39 1
-38 1
-37 1
-36 1
-1
-51
-6
-41 5
-20 1
-22 1
-23 1
-24 1
-18 1
-1
-21
+11
 7
-43 0
+41 5
 1 0
 42 1
 39 1
 38 1
 37 1
 36 1
+1
+20
+7
+43 0
+0 0
+42 1
+39 1
+38 1
+37 1
+36 1
+1
+50
+7
+41 5
+1 0
+20 1
+22 1
+23 1
+24 1
+18 1
 3
 0
-11
-6
+10
+7
 41 4
+1 0
 24 0
 42 1
 39 1
 38 1
 37 1
 0
-52
-6
+51
+7
 41 6
+1 0
 20 1
 22 1
 23 1
 24 1
 42 0
 0
-57
+56
 7
 43 1
-1 0
+0 0
 20 1
 22 1
 23 1
@@ -5710,8 +5700,9 @@ end_DTG
 begin_DTG
 1
 7
-7
 6
+7
+1 0
 2 0
 4 1
 6 1
@@ -5720,8 +5711,9 @@ begin_DTG
 12 1
 2
 2
-8
-6
+7
+7
+1 0
 20 0
 22 1
 23 1
@@ -5729,8 +5721,9 @@ begin_DTG
 40 1
 42 1
 14
-47
-6
+46
+7
+1 0
 20 0
 10 1
 12 1
@@ -5739,8 +5732,9 @@ begin_DTG
 18 1
 2
 1
-48
-6
+47
+7
+1 0
 20 1
 22 0
 12 1
@@ -5748,8 +5742,9 @@ begin_DTG
 16 1
 18 1
 3
-9
-6
+8
+7
+1 0
 22 0
 23 1
 24 1
@@ -5758,8 +5753,9 @@ begin_DTG
 39 1
 2
 2
-49
-6
+48
+7
+1 0
 20 1
 22 1
 23 0
@@ -5767,8 +5763,9 @@ begin_DTG
 16 1
 18 1
 4
-10
-6
+9
+7
+1 0
 23 0
 24 1
 40 1
@@ -5777,8 +5774,9 @@ begin_DTG
 38 1
 2
 3
-50
-6
+49
+7
+1 0
 20 1
 22 1
 23 1
@@ -5786,8 +5784,9 @@ begin_DTG
 16 1
 18 1
 5
-11
-6
+10
+7
+1 0
 24 0
 40 1
 42 1
@@ -5796,8 +5795,9 @@ begin_DTG
 37 1
 2
 4
-51
-6
+50
+7
+1 0
 20 1
 22 1
 23 1
@@ -5805,8 +5805,9 @@ begin_DTG
 40 0
 18 1
 6
-12
-6
+11
+7
+1 0
 40 0
 42 1
 39 1
@@ -5815,8 +5816,9 @@ begin_DTG
 36 1
 1
 5
-52
-6
+51
+7
+1 0
 20 1
 22 1
 23 1
@@ -5825,29 +5827,33 @@ begin_DTG
 42 0
 2
 0
-86
-2
-2 1
-4 0
-8
-13
-6
-4 0
-6 1
-8 1
-10 1
-12 1
-14 1
-2
-7
 85
 3
+1 0
+2 1
+4 0
+8
+12
+7
+1 0
+4 0
+6 1
+8 1
+10 1
+12 1
+14 1
+2
+7
+84
+4
+1 0
 2 1
 4 1
 6 0
 9
-14
-6
+13
+7
+1 0
 6 0
 8 1
 10 1
@@ -5856,15 +5862,17 @@ begin_DTG
 16 1
 2
 8
-84
-4
+83
+5
+1 0
 2 1
 4 1
 6 1
 8 0
 10
-15
-6
+14
+7
+1 0
 8 0
 10 1
 12 1
@@ -5873,16 +5881,18 @@ begin_DTG
 18 1
 2
 9
-83
-5
+82
+6
+1 0
 2 1
 4 1
 6 1
 8 1
 10 0
 11
-16
-6
+15
+7
+1 0
 20 1
 10 0
 12 1
@@ -5891,8 +5901,9 @@ begin_DTG
 18 1
 2
 10
-53
-6
+52
+7
+1 0
 2 1
 4 1
 6 1
@@ -5900,8 +5911,9 @@ begin_DTG
 10 1
 12 0
 12
-17
-6
+16
+7
+1 0
 20 1
 22 1
 12 0
@@ -5910,8 +5922,9 @@ begin_DTG
 18 1
 2
 11
-54
-6
+53
+7
+1 0
 4 1
 6 1
 8 1
@@ -5919,8 +5932,9 @@ begin_DTG
 12 1
 14 0
 13
-18
-6
+17
+7
+1 0
 20 1
 22 1
 23 1
@@ -5929,8 +5943,9 @@ begin_DTG
 18 1
 2
 12
-55
-6
+54
+7
+1 0
 6 1
 8 1
 10 1
@@ -5938,8 +5953,9 @@ begin_DTG
 14 1
 16 0
 14
-19
-6
+18
+7
+1 0
 20 1
 22 1
 23 1
@@ -5948,8 +5964,9 @@ begin_DTG
 18 1
 2
 1
-20
-6
+19
+7
+1 0
 20 1
 22 1
 23 1
@@ -5957,8 +5974,9 @@ begin_DTG
 40 1
 18 0
 13
-56
-6
+55
+7
+1 0
 8 1
 10 1
 12 1
@@ -5969,29 +5987,30 @@ end_DTG
 begin_DTG
 3
 1
-52
-6
-41 6
-20 1
-22 1
-23 1
-24 1
-40 1
-1
-22
+21
 7
 43 1
-1 0
+0 0
 39 1
 38 1
 37 1
 36 1
 35 1
 1
-57
+51
+7
+41 6
+1 0
+20 1
+22 1
+23 1
+24 1
+40 1
+1
+56
 7
 43 1
-1 0
+0 0
 20 1
 22 1
 23 1
@@ -5999,29 +6018,30 @@ begin_DTG
 40 1
 3
 0
-12
-6
+11
+7
 41 5
+1 0
 40 0
 39 1
 38 1
 37 1
 36 1
 0
-21
+20
 7
 43 0
-1 0
+0 0
 40 0
 39 1
 38 1
 37 1
 36 1
 0
-58
+57
 7
 43 2
-1 0
+0 0
 22 1
 23 1
 24 1
@@ -6031,9 +6051,9 @@ end_DTG
 begin_DTG
 1
 1
-21
+20
 7
-1 0
+0 0
 40 0
 42 1
 39 1
@@ -6042,9 +6062,9 @@ begin_DTG
 36 1
 2
 0
-57
+56
 7
-1 0
+0 0
 20 1
 22 1
 23 1
@@ -6052,9 +6072,9 @@ begin_DTG
 40 1
 42 0
 2
-22
+21
 7
-1 0
+0 0
 42 0
 39 1
 38 1
@@ -6063,9 +6083,9 @@ begin_DTG
 35 1
 2
 1
-58
+57
 7
-1 0
+0 0
 22 1
 23 1
 24 1
@@ -6073,9 +6093,9 @@ begin_DTG
 42 1
 39 0
 3
-23
+22
 7
-1 0
+0 0
 39 0
 38 1
 37 1
@@ -6084,9 +6104,9 @@ begin_DTG
 34 1
 2
 2
-59
+58
 7
-1 0
+0 0
 23 1
 24 1
 40 1
@@ -6094,9 +6114,9 @@ begin_DTG
 39 1
 38 0
 4
-24
+23
 7
-1 0
+0 0
 38 0
 37 1
 36 1
@@ -6105,9 +6125,9 @@ begin_DTG
 33 1
 2
 3
-60
+59
 7
-1 0
+0 0
 24 1
 40 1
 42 1
@@ -6115,9 +6135,9 @@ begin_DTG
 38 1
 37 0
 5
-25
+24
 7
-1 0
+0 0
 37 0
 36 1
 35 1
@@ -6126,9 +6146,9 @@ begin_DTG
 32 1
 2
 4
-61
+60
 7
-1 0
+0 0
 40 1
 42 1
 39 1
@@ -6136,9 +6156,9 @@ begin_DTG
 37 1
 36 0
 6
-26
+25
 7
-1 0
+0 0
 36 0
 35 1
 34 1
@@ -6147,9 +6167,9 @@ begin_DTG
 31 1
 2
 5
-62
+61
 7
-1 0
+0 0
 42 1
 39 1
 38 1
@@ -6157,9 +6177,9 @@ begin_DTG
 36 1
 35 0
 7
-27
+26
 7
-1 0
+0 0
 35 0
 34 1
 33 1
@@ -6168,9 +6188,9 @@ begin_DTG
 30 1
 2
 6
-63
+62
 7
-1 0
+0 0
 39 1
 38 1
 37 1
@@ -6178,9 +6198,9 @@ begin_DTG
 35 1
 34 0
 8
-28
+27
 7
-1 0
+0 0
 34 0
 33 1
 32 1
@@ -6189,9 +6209,9 @@ begin_DTG
 26 1
 2
 7
-64
+63
 7
-1 0
+0 0
 38 1
 37 1
 36 1
@@ -6199,9 +6219,9 @@ begin_DTG
 34 1
 33 0
 9
-29
+28
 7
-1 0
+0 0
 33 0
 32 1
 31 1
@@ -6210,9 +6230,9 @@ begin_DTG
 25 1
 2
 8
-65
+64
 7
-1 0
+0 0
 37 1
 36 1
 35 1
@@ -6220,9 +6240,9 @@ begin_DTG
 33 1
 32 0
 10
-30
+29
 7
-1 0
+0 0
 32 0
 31 1
 30 1
@@ -6231,9 +6251,9 @@ begin_DTG
 29 1
 2
 9
-66
+65
 7
-1 0
+0 0
 36 1
 35 1
 34 1
@@ -6241,9 +6261,9 @@ begin_DTG
 32 1
 31 0
 11
-31
+30
 7
-1 0
+0 0
 31 0
 30 1
 26 1
@@ -6252,9 +6272,9 @@ begin_DTG
 27 1
 2
 10
-67
+66
 7
-1 0
+0 0
 35 1
 34 1
 33 1
@@ -6262,9 +6282,9 @@ begin_DTG
 31 1
 30 0
 12
-32
+31
 7
-1 0
+0 0
 30 0
 26 1
 25 1
@@ -6273,9 +6293,9 @@ begin_DTG
 21 1
 2
 11
-68
+67
 7
-1 0
+0 0
 34 1
 33 1
 32 1
@@ -6283,9 +6303,9 @@ begin_DTG
 30 1
 26 0
 13
-33
+32
 7
-1 0
+0 0
 26 0
 25 1
 29 1
@@ -6294,9 +6314,9 @@ begin_DTG
 19 1
 2
 12
-69
+68
 7
-1 0
+0 0
 33 1
 32 1
 31 1
@@ -6304,9 +6324,9 @@ begin_DTG
 26 1
 25 0
 14
-34
+33
 7
-1 0
+0 0
 25 0
 29 1
 27 1
@@ -6315,9 +6335,9 @@ begin_DTG
 17 1
 2
 13
-70
+69
 7
-1 0
+0 0
 32 1
 31 1
 30 1
@@ -6325,9 +6345,9 @@ begin_DTG
 25 1
 29 0
 15
-35
+34
 7
-1 0
+0 0
 29 0
 27 1
 21 1
@@ -6336,9 +6356,9 @@ begin_DTG
 15 1
 1
 14
-71
+70
 7
-1 0
+0 0
 31 1
 30 1
 26 1
@@ -6349,179 +6369,168 @@ end_DTG
 begin_DTG
 1
 1
-4
 2
+3
 48 0
-41 0
+43 7
+45 0
 0
 end_DTG
 begin_DTG
 1
 1
-5
 2
+3
 48 0
-41 0
-0
-end_DTG
-begin_DTG
-1
-1
-6
-2
-48 0
-41 0
-0
-end_DTG
-begin_DTG
-1
-1
-0
-2
-41 5
-51 1
-1
-0
-2
-4
-48 0
-41 5
-52 0
-51 0
-end_DTG
-begin_DTG
-4
-1
-4
-2
-41 0
+43 7
 44 0
+0
+end_DTG
+begin_DTG
 1
-5
+1
+1
+3
+48 0
+43 6
+47 0
+0
+end_DTG
+begin_DTG
+1
+1
+1
+3
+48 0
+43 6
+46 0
+0
+end_DTG
+begin_DTG
+3
+1
+1
+3
+43 6
+46 0
+47 0
+1
 2
-41 0
+3
+43 7
+44 0
 45 0
 1
-6
-2
-41 0
-46 0
-1
-2
 3
-41 5
-52 0
+3
+43 15
 51 0
-1
+52 0
 0
-0
-3
-47 0
-41 5
-51 1
 end_DTG
 begin_DTG
 1
-1
+2
+5
 3
-3
-43 0
-52 0
-51 0
+53 0
+28 4
+54 0
 1
 0
-1
-3
+0
+2
 50 0
-43 0
-51 1
+28 4
+0
 end_DTG
 begin_DTG
 1
 1
-1
+0
 2
-43 0
-51 1
+28 4
+49 1
 1
 0
-3
+5
 4
+53 0
+28 4
+54 0
 49 0
-43 0
-52 0
-51 0
 end_DTG
 begin_DTG
 2
-2
-2
+1
+3
 3
 48 0
-41 5
+43 15
 52 0
-2
-3
-3
-49 0
-43 0
-52 0
-2
-0
-0
-2
-47 0
-41 5
-0
 1
-2
-50 0
-43 0
+4
+3
+53 0
+28 1
+52 0
 0
 end_DTG
 begin_DTG
 2
 1
-2
+3
 3
 48 0
-41 5
+43 15
 51 0
 1
+4
 3
-3
-49 0
-43 0
+53 0
+28 1
 51 0
+0
+end_DTG
+begin_DTG
 2
-0
-0
-3
-47 0
-41 5
-51 1
-0
 1
+4
+3
+28 1
+51 0
+52 0
+1
+5
+3
+28 4
+54 0
+49 0
+1
+0
+0
 3
 50 0
-43 0
-51 1
+28 4
+49 1
+end_DTG
+begin_DTG
+1
+1
+5
+3
+53 0
+28 4
+49 0
+1
+0
+0
+3
+50 0
+28 4
+49 1
 end_DTG
 begin_CG
-13
-28 22
-29 2
-27 4
-21 4
-19 4
-17 4
-15 4
-13 4
-11 4
-9 4
-7 4
-5 4
-3 2
 17
 43 30
 40 2
@@ -6540,6 +6549,23 @@ begin_CG
 25 4
 29 4
 27 2
+16
+41 28
+2 2
+20 4
+22 4
+23 4
+24 4
+40 4
+42 2
+4 4
+6 4
+8 4
+10 4
+12 4
+14 4
+16 4
+18 4
 6
 41 6
 4 3
@@ -6833,7 +6859,11 @@ begin_CG
 17 2
 15 2
 13 1
-12
+18
+53 3
+50 2
+54 2
+51 1
 29 2
 27 4
 21 4
@@ -6846,6 +6876,8 @@ begin_CG
 7 4
 5 4
 3 2
+52 1
+49 2
 12
 43 8
 28 6
@@ -6998,13 +7030,7 @@ begin_CG
 37 2
 36 1
 18 1
-22
-48 5
-47 2
-52 2
-44 1
-45 1
-46 1
+15
 2 2
 20 4
 22 4
@@ -7020,7 +7046,6 @@ begin_CG
 14 4
 16 4
 18 4
-51 2
 12
 41 6
 43 8
@@ -7034,10 +7059,11 @@ begin_CG
 37 2
 36 2
 35 1
-20
-49 2
-50 2
-52 2
+23
+48 3
+44 1
+46 1
+51 1
 40 2
 42 4
 39 4
@@ -7054,42 +7080,52 @@ begin_CG
 25 4
 29 4
 27 2
-51 2
-1
-48 1
-1
-48 1
-1
-48 1
-3
-48 1
-52 1
-51 1
-6
 47 1
-52 1
-44 1
 45 1
+52 1
+2
+48 1
+45 1
+2
+48 1
+44 1
+2
+48 1
+47 1
+2
+48 1
+46 1
+6
+44 1
 46 1
 51 1
-3
-50 1
-52 1
-51 1
-3
-49 1
-52 1
-51 1
-5
-48 2
-49 2
-47 2
-50 2
-52 4
-5
-48 1
-49 1
 47 1
-50 1
+45 1
+52 1
+3
+53 2
+50 2
+54 2
+3
+53 1
+54 1
+49 1
+3
+48 1
+53 1
+52 2
+3
+48 1
+53 1
 51 2
+5
+50 1
+54 1
+51 1
+52 1
+49 1
+3
+53 1
+50 1
+49 1
 end_CG

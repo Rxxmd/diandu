@@ -16,4 +16,3 @@ domain_path  = _config.domain_config['domain_path']         # 从config中读取
 problem_path = _config.problem_config['problem_path']       # 从config中读取problem_path
 Parser  = PDDL.init_parser(domain_path, problem_path)       # 初始化Parser
 Line = line.Line(_config)                                   # 根据config 初始化生产线
-db = database.Database(**_config.db_config)                 # 创建数据库连接
