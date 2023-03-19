@@ -27,6 +27,8 @@ BASIN_CLOSE_CODE = 0x6002
 EXSIGNAL_CODE    = 0xB000
 FINAL_CODE       = 0xF000
 
+ACTUAL_TIME_ADDR = 12400
+
 HOIST_AUTO_ADDR   = 95936
 HOIST_POS_ADDR    = 95976
 INIT_WRITE_ADDR   = 13800
@@ -269,8 +271,6 @@ def check_all_poles_signal(hoists):
         return True
     return False
 
-
-
 def get_tank_status(tanks=list(range(0, 300))):
     '''
         查看可以使用的槽位 1 表示可用， 0 表示不可用（封槽）
@@ -322,6 +322,9 @@ def get_hoist_position(hoists=list(range(0,30))):
         
     '''
     return __read(hoists, HOIST_POS_ADDR, MAX_HOIST, False)
+
+def get_actual_time(tanks=list(range(0, 300))):
+    return __read(tanks, ACTUAL_TIME_ADDR, MAX_TANK, False)
 
 def __read(input, address, maxnum, is_bit):
     '''

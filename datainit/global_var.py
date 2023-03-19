@@ -2,12 +2,10 @@
 import sys
 import os
 sys.path.append("..")
-import ipdb
 from datainit import domain
 from datainit import problem
 from datainit import line
 from datainit import PDDL
-from datainit import database
 from datainit import plcApi as PLC
 import _config
 domain.gen_domain(_config)                                  # 生成domain  文件

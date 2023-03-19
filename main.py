@@ -17,7 +17,7 @@ from multiprocessing import Process, Queue
 import subprocess
 import time
 from datainit import plcApi
-from datainit.global_var import _config
+from datainit.global_var import _config, Line
 from plan import Planning
 from output import *
 TANKS = _config.slot_config['slots']
@@ -69,7 +69,7 @@ if __name__ == '__main__':
         plan2out = Queue()              
         out2plan = Queue()
         p1 = Process(target = planing, args=(plan2out, out2plan ))
-        p2 = Output(plan2out, out2plan)
+        p2 = Output(plan2out, out2plan, Line, _config)
 
         p1.start()
         p2.start()

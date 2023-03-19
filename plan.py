@@ -12,7 +12,7 @@ from algorithm.predict import Predict
 
 class Planning:
     def __init__(self, config):
-        self.init_time = time.time()
+        self.out_time = 0
         self.time = 0    
         self.predict = Predict(config, Line)  # 预判模块
         self.Actions = []   # 保存当前正在执行的动作
@@ -24,23 +24,80 @@ class Planning:
         self.parser.state_to_tuple()
         self.lock_stocking_slot = {slot:False for slot in self.Line.Slots.stocking} #读取上料槽
 
+        self.pole_next_start_time = {}
         self.pole_min_end_times = {}   # 用来记录每个天车的下一次规划的时间点
-        self.tank_ocupy_time = {}
+        self.tank_ocupy_time = defaultdict(dict)
         self.pole_move_time   = config.pole_config['pole_moving_duration']
         self.pole_stop_time   = config.pole_config['pole_stop_duration']
         self.pole_start_time  = config.pole_config['pole_start_duration']
         self.pole_load_time   = config.pole_config['pole_hangon_duration']
         self.pole_unload_time = config.pole_config['pole_hangoff_duration']
         self.gear_move_time   = config.gear_config['gear_moving_duration']
-        self.collision_time = 5
-        self.pole_interval = 4
+        self.basin_close_time = config.pole_config['basin_close_time']
+        self.basin_open_time =  config.pole_config['basin_open_time']
+        self.pole_interval = config.HOIST_INTERVAL
         self.cut_pole = None
+        self.predict_table = defaultdict(list)
         self.init_pole_min_end_time()
-        self.record_time = defaultdict(list)
-        # self.output = open('data/211/output.xls', 'w')
+        self.record_time = defaultdict(list)  # 记录产品处理时间
+    
     def init_pole_min_end_time(self):
         for pole in self.Line.Poles.dict:
             self.pole_min_end_times[pole] = float('inf')
+
+    def update_predict_table(self, product):
+        name = product.name
+        for stage, time_tank in product.tank_table.items():
+            if stage + 1 in product.hoist_table:
+                pole = product.hoist_table[stage + 1][1]
+                LB = time_tank[0].upper
+                self.predict_table[pole].append((LB, (name, stage)))
+        for pole in self.predict_table:
+            self.predict_table[pole].sort(key = lambda x:x[0])
+
+    def error_init(self):
+        '''
+            发生错误之后重启的处理方法
+        '''
+        slots = list(set(self.Line.Slots.array) - set(self.Line.Slots.stocking))
+        bar_positions = PLC.get_bar_position(slots)
+        craft_numbers = PLC.get_products_craft(slots) 
+        stage_numbers = PLC.get_products_stage(slots)
+        actual_times = PLC.get_actual_time(slots)
+        # 临时记录stage 和craft 排序用
+        temp = []
+        if bar_positions and any(bar_positions.values()):
+            positions = [k for k ,v in bar_positions.items() if v == 1]
+            for pos in positions :
+                print(f'检测到第{pos}号槽位有物品')
+                stage = stage_numbers[pos]
+                craft_number = craft_numbers[pos]
+                actual_time = actual_times[pos]
+                start_time = self.time - actual_time
+                temp.append((stage, actual_time, craft_number))
+                is_stocking = True
+                if pos not in self.Line.Slots.stocking:
+                    is_stocking = False
+                self.Line.Products.add_product(self.parser, pos, craft_number, stage, start_time, is_stocking)
+        temp = sorted(temp, key=lambda x:(x[0], x[1]), reverse=True)
+        for craft, products in self.Line.Products.dict.items():
+            self.Line.Products.dict[craft] = sorted(self.Line.Products.dict[craft], key=lambda x:(x.stage, x.process_start_time), reverse=True)
+        # 按照stage的大小和反应时间排序，stage 大的排前面， 反应时间大的排前面
+        for stage, actual_time, craft in temp:
+            max_start = 100
+            products = self.Line.Products.dict[craft]
+            products = [p for p in products if p.stage == stage and p.process_start_time == self.time - actual_time] 
+            product = copy.deepcopy(products[0])
+            product =  self.predict.pre_sort_product(product,self.time, max_start)
+            while not product:
+                max_start += 1000
+                product = copy.deepcopy(products[0])
+                product =  self.predict.pre_sort_product(product,self.time, max_start)
+            print(self.time, '添加物品成功')
+            name = self.Line.Products.dict[craft][0].name
+            self.products[name] = product
+            self.Line.Products.dict[craft].pop(0)
+            self.update_predict_table(product)
 
     def add_product(self):
         '''
@@ -51,28 +108,50 @@ class Planning:
         bar_positions = PLC.get_bar_position(self.Line.Slots.stocking)
         craft_numbers = PLC.get_products_craft(self.Line.Slots.stocking) 
         stage_numbers = PLC.get_products_stage(self.Line.Slots.stocking)
+        
         # 把每个位置的飞巴都加入 self.Line.Products
-        # if bar_positions and any(bar_positions.values()):
-        #     positions = [k for k ,v in bar_positions.items() if v == 1]
-        #     for pos in positions :
-        #         if not self.lock_stocking_slot[pos]:
-        #             print('检测到第{pos}号槽位有物品')
-        #             stage = stage_numbers[pos]
-        #             craft_number = craft_numbers[pos]
-        #             self.lock_stocking_slot[pos] = True
-        #             self.Line.Products.add_product(self.parser, pos, craft_number, stage)
+        if bar_positions and any(bar_positions.values()):
+            positions = [k for k ,v in bar_positions.items() if v == 1]
+            for pos in positions :
+                if not self.lock_stocking_slot[pos]:
+                    print(f'检测到第{pos}号槽位有物品')
+                    stage = stage_numbers[pos]
+                    craft_number = craft_numbers[pos]
+                    self.lock_stocking_slot[pos] = True
+                    self.Line.Products.add_product(self.parser, pos, craft_number, stage)
         # 对每个物品都进行预排序
         for craft, products in self.Line.Products.dict.items():
             if not products:
                 continue
             product = copy.deepcopy(products[0])
-            product =  self.predict.pre_sort_product(product,self.time)
+            product =  self.predict.pre_sort_product(product,self.time, max_start = 100)
             # 如果与排序成功了则从 self.Line.Products 中删除物品， 把物品加入self.products
             if product:
+                print(self.time, '添加物品成功')
                 name = self.Line.Products.dict[craft][0].name
                 self.products[name] = product
                 self.Line.Products.dict[craft].pop(0)
+                self.update_predict_table(product)
                 return True
+
+    def accept_output_data(self, out2plan):
+        while not out2plan.empty():
+            data = out2plan.get()
+            if 'empty_slot' in data:
+                empty_slot = data['empty_slot']
+                self.check_product(empty_slot)
+            elif 'out_time' in data:
+                self.out_time = data['out_time']
+                
+    def check_product(self, empty_slot):
+        '''
+            接受output进程传过来的数据，看上料槽位的物品是否被拿走了
+        '''
+        for slot in empty_slot:
+            if slot in self.lock_stocking_slot:
+                self.lock_stocking_slot[slot] = False
+                print(self.lock_stocking_slot)
+
 
     '''
         子目标模块
@@ -111,17 +190,27 @@ class Planning:
         '''
         goal = []
         state = list(self.parser.state)
-        poles = copy.deepcopy(self.Line.Poles.dict)
-        poles = list(poles.values())
-        poles = sorted(poles, key=lambda pole: pole.order_num)
-        poles.reverse()
+
         self.Line.Slots.set_blanking_slot_empty()
         exe_poles = self.get_exe_poles()
+        # 对每个天车按照预排序的时间先后顺序执行
+        pole_goals = {}
+        for pole, table in self.predict_table.items():
+            if table:
+                pole_goals[pole] = table[0]
+                
+        poles = sorted(pole_goals, key = lambda x:x[1][0])
+        for pole in self.Line.Poles.dict:
+            if pole not in poles:
+                poles.append(pole)
 
         for pole in poles:
+            pole = self.Line.Poles.dict[pole]
+          
             if pole.name in exe_poles:
                 continue
             
+            # 如果天车已经拿到物品了，子目标就是把物品放到下一个槽位
             if pole.select and pole.product and pole.up_down == 3 and pole.product in self.products: 
                 
                 product = self.products[pole.product]
@@ -140,19 +229,29 @@ class Planning:
                     if product.next_slot in self.Line.Slots.empty:
                         self.Line.Slots.empty.remove(product.next_slot)
 
-         
+            # 如果天车还没拿到物品， 但是已经选中物品了，子目标就是拿到物品
             elif pole.select and not pole.product and not pole.mid:
                 goal.append(f'(pole_have_things {pole.name} {pole.select})')
-
+            # 如果天车还没选择物品，即空闲状态
             elif not pole.select and not pole.product and pole.stopping and not pole.mid:
-                
-                product = self.select_product(pole)
+                # 如果天车需要空闲很久，那就移动到中间点
+                if pole.name in pole_goals:
+                    load_start_time = pole_goals[pole.name][0]
+                    if load_start_time - self.time > self.pole_start_time + self.pole_stop_time + 2 * len(pole.interval) * self.pole_move_time:
+                        mid_position = len(pole.interval)//2 + pole.interval[0]
+                        if pole.position != mid_position:
+                            goal.append(f'(pole_position {pole.name} slot{mid_position})')
+                    else: 
+                        product = self.select_product(pole, pole_goals)
 
-                if product:
-                    
-                    goal.append(f'(pole_have_things {pole.name} {product})')
+                        if product:
+                            goal.append(f'(pole_have_things {pole.name} {product})')
+            elif not pole.select and not pole.product and not pole.stopping and not pole.mid:
+                mid_position = len(pole.interval)//2 + pole.interval[0]
+                if pole.position != mid_position:
+                    goal.append(f'(pole_position {pole.name} slot{mid_position})')
+                
         state = tuple(state)
-        
         self.parser.state = state
         return goal
    
@@ -163,73 +262,110 @@ class Planning:
         goal = gear_goal + pole_goal
         return goal
 
-    def record_ocupy_tank_time(self, tank, start_time):
-        self.tank_ocupy_time[tank] = P.closed(start_time, start_time + self.pole_load_time)
+    def record_ocupy_tank_time(self, tank, start_time, pole):
+        self.tank_ocupy_time[pole.name][tank] = P.closed(start_time, start_time + self.pole_load_time)
 
-    def is_collision(self, tank, start_time):
+    def is_collision(self, tank, start_time, pole):
+        '''
+            判断天车在start_time + self.pole_load_time 
+            区间是否会和别的天车碰撞
+        '''
         # pole_interval = -(-self.pole_interval // 2)
         pole_interval = self.pole_interval
         tanks = list(range(tank - pole_interval, tank + pole_interval + 1))
-        if set(tanks) & self.tank_ocupy_time.keys():
-            for tank in set(tanks) & self.tank_ocupy_time.keys():
-                if P.closed(start_time, start_time + self.pole_load_time) & self.tank_ocupy_time[tank]:
-                    return True
+        for k, v in self.tank_ocupy_time.items():
+            if k != pole.name:
+                if set(tanks) & set(v.keys()):
+                    for tank in (set(tanks) & set(v.keys())):
+                        if P.closed(start_time, start_time + self.pole_load_time) & v[tank]:
+                            return True
         return False
         
-    def select_product(self, pole):
-        min_t = float('inf')
-        gproduct = None
-        gtank = None
+    def select_product(self, pole, pole_goals):
         # 确定pole的下一个物品
-        # 预估pole下一次取物品的时间， 记录到pole_min_end_Time
+        upper = pole_goals[pole.name][0] - 3
+        pname = pole_goals[pole.name][1][0]
+        pstage = pole_goals[pole.name][1][1]
+        product = self.products[pname]
+        tank = product.tank_table[product.stage][1]
+        hoist = product.hoist_table[product.stage + 1][1]
+        # 计算移动的时间
+        move_time = abs(pole.position - product.position) + self.pole_start_time + self.pole_stop_time
+        if pole.position == product.position:
+            move_time = 0
+        # 如果物品反应的时间已经达到最低要求了， 那么就是available
+        if self.time - product.process_start_time >= product.processes[product.stage].lower_bound - move_time:
+            product.available = True
+        if upper - self.time <= move_time and product.available and product.position == product.next_slot and tank in self.Line.Slots.empty:
+            
+            end_move_time = self.time + move_time + self.pole_load_time + self.pole_start_time + self.pole_stop_time + abs(tank - product.position)
+            cols1 = self.is_collision(product.position,self.time + move_time, pole)
+            cols2 = self.is_collision(tank, end_move_time, pole)
         
-        for k ,v in self.products.items():
-            # upper是预排序好的完成时间
-            try:
-                hoist = v.hoist_table[v.stage + 1][1]
-            except:
-                hoist = v.hoist_table[v.stage][1]
-            if hoist == pole.name:
-                
-                upper = v.tank_table[v.stage][0].upper
-                move_time = abs(pole.position - v.position) + self.pole_start_time + self.pole_stop_time
-                if pole.position == v.position:
-                    move_time = 0
-                #          已经反应的时间                         反应时间的下界
-                if self.time - v.process_start_time >= v.processes[v.stage].lower_bound - move_time:
-                    v.available = True
-                if upper - self.time <= move_time and v.available and v.position == v.next_slot:
-                # if v.hoist_table[v.stage + 1] and  v.hoist_table[v.stage + 1][0].lower <= self.time and v.position == v.next_slot and v.available:
-                    # print(self.time - v.hoist_table[v.stage][0].lower)
-                    # if self.time - v.hoist_table[v.stage][0].lower > 10:
-                    #     ipdb.set_trace()
-                    
-                    tank = v.tank_table[v.stage][1]
-                    hoist = v.hoist_table[v.stage + 1][1]
-                    end_move_time = self.time + move_time + self.pole_load_time + self.pole_start_time + self.pole_stop_time + abs(tank - v.position)
+            if cols1 or cols2:
+                return None
+            self.record_ocupy_tank_time(product.position, self.time + move_time, pole)
+            self.record_ocupy_tank_time(tank, end_move_time - self.pole_unload_time, pole)
+            self.predict_table[pole.name].pop(0)
+            self.products[product.name].next_slot = tank
 
-                    cols1 = self.is_collision(v.position,self.time + move_time)
-                    cols2 = self.is_collision(tank, end_move_time)
-                    
-                    if cols1 or cols2:
-                        return None
-                   
-                    if hoist == pole.name and tank in self.Line.Slots.empty:
-                        tl = upper
-                        if min_t > tl:
-                            gproduct = v
-                            min_t = tl
-                            gtank = tank
+            self.products[product.name].stage += 1
+
+            self.products[product.name].available = False
+
+            self.products[product.name].stage_start = float('inf')
+
+            self.Line.Slots.empty.remove(tank)
+        
+            self.Line.Poles.dict[pole.name].select = product.name
+        
+            return product.name
+            
+        return None
+
+
+        ipdb.set_trace()
+        # for k ,v in self.products.items():
+        #     # upper是预排序好的完成时间
+        #     try:
+        #         hoist = v.hoist_table[v.stage + 1][1]
+        #     except:
+        #         hoist = v.hoist_table[v.stage][1]
+        #     if hoist == pole.name:
                 
-                else:
+        #         upper = v.tank_table[v.stage][0].upper
+                
+        #         move_time = abs(pole.position - v.position) + self.pole_start_time + self.pole_stop_time
+        #         if pole.position == v.position:
+        #             move_time = 0
+        #         #          已经反应的时间                         反应时间的下界
+        #         if self.time - v.process_start_time >= v.processes[v.stage].lower_bound - move_time:
+        #             v.available = True
+                
+        #         if upper - self.time <= move_time and v.available and v.position == v.next_slot:
+                
+        #             tank = v.tank_table[v.stage][1]
+        #             hoist = v.hoist_table[v.stage + 1][1]
+        #             end_move_time = self.time + move_time + self.pole_load_time + self.pole_start_time + self.pole_stop_time + abs(tank - v.position)
                     
-                    if upper < min_t and v.position == v.next_slot:
-                        min_t = upper
-                        self.pole_min_end_times[pole.name] = upper - self.time - move_time
-                        
+        #             cols1 = self.is_collision(v.position,self.time + move_time, pole)
+        #             cols2 = self.is_collision(tank, end_move_time, pole)
+                    
+        #             if cols1 or cols2:
+        #                 return None
+                   
+        #             if hoist == pole.name and tank in self.Line.Slots.empty:
+        #                 tl = upper
+        #                 if min_t >= tl:
+        #                     gproduct = v
+        #                     min_t = tl
+        #                     gtank = tank
+                
+        #         else:
+        #             self.pole_next_start_time[pole.name] = upper - move_time
         if gproduct:
-            self.record_ocupy_tank_time(v.position, self.time + move_time)
-            self.record_ocupy_tank_time(gtank, end_move_time - self.pole_unload_time)
+            self.record_ocupy_tank_time(v.position, self.time + move_time, pole)
+            self.record_ocupy_tank_time(gtank, end_move_time - self.pole_unload_time, pole)
             self.products[gproduct.name].next_slot = gtank
 
             self.products[gproduct.name].stage += 1
@@ -452,44 +588,46 @@ class Planning:
             product = sp[-2]
             
             if product in self.products:
-                cur_stage = self.products[product].stage
-
+                stage = self.products[product].stage
+                process = self.products[product].processes
             if time <= min_end_time:
-
-                output_actions.append((time, act_name, duration))
-            
-            if time <= min_end_time and ('hangup' in act_name or 'move-gear-equip' in act_name):
-                if product not in self.record_time:
-                    self.record_time[product].append(self.time)
-                self.record_time[product][-1] = self.time - self.record_time[product][-1]
                 
-            if time <= min_end_time and ('hangoff' in act_name or 'move-gear-equip' in act_name):
-                self.record_time[product].append(self.time + time + duration)
+                if time <= min_end_time and ('hangup' in act_name or 'move-gear-equip' in act_name):
+                    # drip_time 包含滴水， 上升， 合水盆时间
+                    drip_time = process[stage - 1].drip + self.pole_load_time + self.basin_close_time * process[stage - 1].down_num
+                    output_actions.append((time, act_name, drip_time))
 
-                self.products[product].process_start_time = self.time + time + duration
-                self.products[product].available = False
+                    # 记录浸泡时间
+                    if product not in self.record_time or not self.record_time[product]:
+                        self.record_time[product].append(self.time)
+                    else:
+                        self.record_time[product][-1] = self.time - self.record_time[product][-1]
+                
+                elif time <= min_end_time and ('hangoff' in act_name or 'move-gear-equip' in act_name):
+                    # wait_time 包含等待， 下降， 开水盆的时间
+                    wait_time = process[stage - 1].wait + self.pole_unload_time + self.basin_open_time * process[stage - 1].down_num
+                    output_actions.append((time, act_name, wait_time))
+                    #记录浸泡时间
+                    self.record_time[product].append(self.time + time + duration)
+
+                    self.products[product].process_start_time = self.time + time + duration
+                    self.products[product].available = False
+                else:
+                    output_actions.append((time, act_name, duration))
                     
-        actions_name.extend(replace)
-
-        output_actions.extend(replace)
-        
-        actions_name = list(set(actions_name) - set(delete))
-
-        output_actions = list(set(output_actions) - set(delete))
-            
-
         return output_actions
 
     def del_end_products(self):
         # 删除已经执行完最后一道 craft 的 product
         delete = {}
+        # df = pd.DataFrame()
         for k, v in self.products.items():
+            # df = pd.concat([df, pd.DataFrame(self.record_time[k])])
             if v.stage == max(v.processes) and  v.position in self.Line.Slots.blanking:
-                df = pd.DataFrame(self.record_time)
-                df.to_excel('data/211/output.xlsx')
-                print(self.time)
                 delete[k] = v
-
+                print(self.record_time[k])
+                print(self.record_time[k], file = open('../data/211/output.txt', 'a'))
+        # df.to_excel('../data/211/output.xlsx')
         self.products = dict(self.products.items() - delete.items())
 
     '''
@@ -501,8 +639,6 @@ class Planning:
         for time, act, duration in sorted(actions_name):
             
             if time <= min_end_time:
-                if 'drip' in act or 'basin' in act:
-                    continue
                 sp = re.split('[( )]', act)
                 sp = sp[1:-1]
                 
@@ -515,8 +651,13 @@ class Planning:
                         
                         self.Actions.append((self.time + time, tem_act, 'at start'))
                         self.Actions.append((self.time + time + duration, tem_act, 'at end'))
-                        
-                        # plan2out.put({'action': (self.time + time, act, duration), 'poles': poles})
+                        if 'hang' in act:
+                            product = tem_act.parameters[-1]
+                            stage = self.products[product].stage - 1
+                            craft = self.products[product].craft
+                            plan2out.put({'action': (self.time + time, act, duration), 'poles': poles, 'stage': stage, 'craft': craft})
+                        else:
+                            plan2out.put({'action': (self.time + time, act, duration), 'poles': poles})
                         break
     
     def update_state(self, actions_name, min_end_time, stop_time, plan2out):
@@ -629,8 +770,8 @@ class Planning:
 
             elif 'hangup' in action.name and status == 'at end':
                 position = self.products[product].position
-                if position in self.lock_stocking_slot and self.lock_stocking_slot[position]:
-                    self.lock_stocking_slot[position] = False
+                # if position in self.lock_stocking_slot and self.lock_stocking_slot[position]:
+                #     self.lock_stocking_slot[position] = False
                 self.products[product].mid = False
                 self.Line.Poles.dict[pole].up_down = 3
                 
@@ -687,52 +828,56 @@ class Planning:
         # self.Line.Products.add_product(self.parser, 1, 'craft211', db)
         # self.Line.Products.add_product(self.parser, 1, 'craft211', db)
         start = 0
+        self.error_init()
         while True:
-            if self.time - start >= 0:
-                self.Line.Products.add_product(self.parser, 1, 1, 1)
-                start += 900
-            if self.time % 5 == 0:
-                self.add_product()
-            self.predict.products = self.products
-       
-            goal = self.gen_goal() 
-            
-            if goal:
-                utils.state2pddl(self.parser, goal, _config.other_config['new_problem_path'])
-                subprocess.run(f'D:/cygwin64/bin/python2.7  {_config.other_config["planning_path"]} she {_config.domain_config["domain_path"]} {_config.other_config["new_problem_path"]} --no-iterated  --time 5 > console_output.txt', shell=True)
-                actions_name = utils.parser_sas(goal)   
+            # if self.time - start >= 0 and start < 9000:
+            #     self.Line.Products.add_product(self.parser, 1, 1, 1)
+            #     start += 900
+            self.accept_output_data(out2plan)
+            if self.time - self.out_time <= 10:
+                print(self.time, self.out_time)
+                if self.time % 10 == 0:
+                    self.add_product()
+
+                self.predict.products = self.products
+
+                goal = self.gen_goal() 
+                if goal:
+                    utils.state2pddl(self.parser, goal, _config.other_config['new_problem_path'])
+                    subprocess.run(f'D:/cygwin64/bin/python2.7  {_config.other_config["planning_path"]} she {_config.domain_config["domain_path"]} {_config.other_config["new_problem_path"]} --no-iterated  --time 5 > console_output.txt', shell=True)
+                    actions_name = utils.parser_sas(goal)   
+                    
+                    stop_time = self.parser_stop_time(actions_name) 
+                    min_end_time = self.parser_min_time(actions_name, stop_time)
+                    
+                    actions_name = self.fliter_actions(actions_name, min_end_time, stop_time)
+
+                    actions_name = self.change_move_time(actions_name, stop_time, min_end_time)
+                    self.update_products(actions_name, min_end_time)
+                else:
+                    min_end_time = 1    
+                    actions_name = []
+                    stop_time = []
+                # out_actions = self.sort_actions_name(actions_name)
+                # ipdb.set_trace()
+                # if out_actions:
+                #     poles = self.Line.Poles.dict
+                #     plan2out.put({'actions': sorted(out_actions), 'poles': poles})
+                # utils.output(actions_name, self.Line.Poles.dict,  self.time, self.init_time, self.output)
+                self.update_state(actions_name, min_end_time, stop_time, plan2out)                            
                 
-                stop_time = self.parser_stop_time(actions_name) 
-                min_end_time = self.parser_min_time(actions_name, stop_time)
+                self.update_products_position()
+
+                self.del_end_products()
+
+                self.Line.Poles.update_pole_position(self.parser.state)
                 
-                actions_name = self.fliter_actions(actions_name, min_end_time, stop_time)
+                self.time += min_end_time
+                # if not self.products: 
+                #     return
 
-                actions_name = self.change_move_time(actions_name, stop_time, min_end_time)
-                self.update_products(actions_name, min_end_time)
-            else:
-                min_end_time = 1    
-                actions_name = []
-                stop_time = []
-            # out_actions = self.sort_actions_name(actions_name)
-            # ipdb.set_trace()
-            # if out_actions:
-            #     poles = self.Line.Poles.dict
-            #     plan2out.put({'actions': sorted(out_actions), 'poles': poles})
-            # utils.output(actions_name, self.Line.Poles.dict,  self.time, self.init_time, self.output)
-            self.update_state(actions_name, min_end_time, stop_time, plan2out)                            
-            
-            self.update_products_position()
-
-            self.del_end_products()
-
-            self.Line.Poles.update_pole_position(self.parser.state)
-            
-            self.time += min_end_time
-            # if not self.products: 
-            #     return
-
-plan = Planning(_config)
-plan.execute(1,1)
+# plan = Planning(_config)
+# plan.execute(1,1)
 # finally:
 #     subprocess.run(f'rm *.pddl output output.sas plan.validation *sas_plan ', shell=True)
 #     plan.output.close()

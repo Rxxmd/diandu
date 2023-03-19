@@ -9,6 +9,7 @@ BLANKING_SLOT = [1]    # 下料槽位
 STOCKING_SLOT = [1]     # 上料槽位
 BORDER_SLOT = [1, 39]   # 边界槽位
 HOIST_INTERVAL = 4      # 天车间隔
+
 IS_CYCLE = False        # 流水线是否是循环的
 HOIST_REGION = [range(1,16), range(14, 30), range(28, 40)] #天车的区间
 
@@ -18,6 +19,9 @@ HOIST_DOWN_DURATION = 10
 HOIST_STOP_DURATION = 2
 HOIST_START_DURATION = 2
 GEAR_MOVE_DURATION = 16
+BASIN_OPEN_TIME = 5
+BASIN_CLOSE_TIME = 5
+
 
 # 配置文件路径
 cur_path  = os.path.abspath(__file__)
@@ -77,6 +81,8 @@ pole_config = {
     'pole_stop_duration': HOIST_STOP_DURATION,
     'pole_hangon_duration': HOIST_RISE_DURATION,
     'pole_hangoff_duration':HOIST_DOWN_DURATION,
+    'basin_open_time': BASIN_OPEN_TIME,
+    'basin_close_time': BASIN_CLOSE_TIME,
 }
 
 gear_config = {

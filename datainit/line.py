@@ -2,7 +2,7 @@ from collections import defaultdict, OrderedDict
 from dataclasses import dataclass, field
 from datainit import database
 class Product:
-    def __init__(self, name, stage, craft_name, processes, position):
+    def __init__(self, name, stage, craft_name, processes, position, process_start_time=0):
         self.name = name
         self.craft = craft_name
         self.position = position
@@ -10,13 +10,12 @@ class Product:
         self.stage = stage
         self.available = True
         self.processes = processes
-        self.process_start_time = 0
+        self.process_start_time = process_start_time
         self.pole = None
         self.mid = False
     
     def __repr__(self):
         return str(self.__dict__)
-
 
 class Products:
     def __init__(self, crafts):
@@ -24,21 +23,23 @@ class Products:
         self.dict = defaultdict(list)
         self.name = 0
 
-    def add_product(self, parser, position, ProcessNumber, stage = 1):
+    def add_product(self, parser, position, ProcessNumber, stage = 1, process_start_time = 0, is_stocking = True):
         # product name
         name = f'p{self.name}'
         self.name += 1
         state = list(parser.state)
         state.append(('product_at', name, f'slot{position}'))
+        if not is_stocking:
+            state.append(('slot_not_available', f'slot{position}'))
         parser.state = tuple(state)
         parser.objects['product'].append(name)
+        
         # create product
-        product = Product(name, stage, ProcessNumber, self.crafts[ProcessNumber], position)
+        product = Product(name, stage, ProcessNumber, self.crafts[ProcessNumber], position, process_start_time)
         self.dict[ProcessNumber].append(product)
     
     def __repr__(self):
         return str(self.__dict__)
-
 
 @dataclass
 class Process:
@@ -50,7 +51,6 @@ class Process:
     drip: int = 0
     up_num: int = 0
     down_num: int = 0
-
 
 class Craft: 
     '''
@@ -82,12 +82,12 @@ class Craft:
             # 按照步序把流程分组
             craft = OrderedDict()
             for step, group in processes.groupby('StepNumber'):
-                tanks = group['TankNumber'].tolist()
-                wait = group['WaitTime'].iloc[0]
-                up_num = group['UpCount'].iloc[0]
-                drip = group['DripWaterTime'].iloc[0]
+                tanks       = group['TankNumber'].tolist()
+                wait        = group['WaitTime'].iloc[0]
+                up_num      = group['UpCount'].iloc[0]
+                drip        = group['DripWaterTime'].iloc[0]
+                down_num    = group['PushWaterCount'].iloc[0]
                 lower_bound = group["DipTime"].iloc[0]
-                down_num = group['PushWaterCount'].iloc[0]
                 upper_bound = group['DipTimeUpLimit'].iloc[0]
 
                 process = Process(lower_bound, upper_bound, tanks, wait, drip, up_num, down_num)
@@ -97,7 +97,6 @@ class Craft:
 
     def __repr__(self):
         return str(self.__dict__)
-
 
 class Pole:
     def __init__(self, name, position, interval, order_num):
@@ -114,7 +113,6 @@ class Pole:
 
     def __repr__(self):
         return str(self.__dict__)
-
 
 class Poles:
     def __init__(self, config):
@@ -143,7 +141,6 @@ class Poles:
     def __repr__(self):
         return str(self.__dict__)
 
-
 class Gear:
     def __init__(self, name, position, region) -> None:
         self.name = name,
@@ -155,7 +152,6 @@ class Gear:
 
     def __repr__(self):
         return str(self.__dict__)
-
 
 class Gears:
     def __init__(self, config):
@@ -173,7 +169,6 @@ class Gears:
 
     def __repr__(self):
         return str(self.__dict__)
-
 
 class Slots:
     def __init__(self, config):
@@ -204,7 +199,6 @@ class Slots:
     def __repr__(self):
         return str(self.__dict__)
 
-
 class Line:
     def __init__(self, config):
         db = database.Database(**config.db_config)           # 创建数据库连接
@@ -216,7 +210,6 @@ class Line:
 
     def __repr__(self):
         return str(self.__dict__)
-
 
 
 
