@@ -74,7 +74,8 @@ def gen_domain(config):
     )
     '''
     str2 = gen_move(interval)
-    str3 = '''(:durative-action HangUp-Pole
+    str3 = gen_gear(config)
+    str4 = '''(:durative-action HangUp-Pole
         :parameters (?p - pole ?s - slot ?r - product)
         :duration (= ?duration (pole_hangon_duration))
         :condition (and (at start(pole_empty ?p))
@@ -228,7 +229,8 @@ def gen_domain(config):
         )
     )
     )'''
-    domain = str1 + str2 + str3
+    
+    domain = str1 + str2 + str3 + str4
     with open(path, 'w') as f:
         print(domain, file = f)
 
@@ -285,4 +287,70 @@ def gen_move(interval):
 
             res += str
     
+    return res
+
+
+def gen_gear(config):
+    res = '''
+    (:durative-action Move-Gear-equip
+        :parameters (?p - pole ?s1 - slot ?s2 - slot ?r - product)
+        :duration (= ?duration (gear_moving_duration))
+        :condition ( and (over all(exchanging_connection ?s1 ?s2))
+            (over all(exchanging_slot ?s1))
+            (over all(exchanging_slot ?s2))
+            (at start(pole_position ?p ?s1))
+            ; (at start(slot_have_pole ?s1))
+            ; (at start (not (slot_have_pole ?s2)))
+            (at start (not (pole_empty ?p)))
+
+            (at start (product_at ?r ?s1))
+
+            (at start (slot_not_available ?s1))
+            (over all(pole_region ?p ?s1))
+            (over all(pole_region ?p ?s2))
+
+            (at start(pole_available ?p))
+        )
+        :effect (and (at start(not (pole_position ?p ?s1)))
+            (at end(pole_position ?p ?s2))
+
+            (at start (not (product_at ?r ?s1)))
+            (at end (product_at ?r ?s2))
+
+            (at start (slot_not_available ?s1))
+            (at end (slot_not_available ?s2))
+
+            (at start(not (pole_available ?p)))
+            (at end(pole_available ?p))
+
+            (at end(not (target_slot ?s2 ?r)))
+        )
+    )
+
+    (:durative-action Move-Gear-empty
+        :parameters (?p - pole ?s1 - slot ?s2 - slot)
+        :duration (= ?duration (gear_moving_duration))
+        :condition ( and (over all(exchanging_connection ?s1 ?s2))
+            (over all(exchanging_slot ?s1))
+            (over all(exchanging_slot ?s2))
+            (at start(pole_position ?p ?s1))
+
+            (at start (slot_not_available ?s2))
+
+            (over all(pole_empty ?p))
+            (over all(pole_region ?p ?s1))
+            (over all(pole_region ?p ?s2))
+            (at start(pole_available ?p))
+        )
+        :effect (and (at start(not (pole_position ?p ?s1)))
+            (at end(pole_position ?p ?s2))
+
+            (at start(not (pole_available ?p)))
+            (at end(pole_available ?p))
+
+            (at start (slot_not_available ?s1))
+            (at end (not (slot_not_available ?s2)))
+        )
+    )
+    '''
     return res

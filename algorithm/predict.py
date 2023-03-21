@@ -18,9 +18,8 @@ class Predict:
         self.pole_load_time   = config.pole_config['pole_hangon_duration']
         self.pole_unload_time = config.pole_config['pole_hangoff_duration']
         self.gear_move_time   = config.gear_config['gear_moving_duration']
-        self.basin_open_time = 5
-        self.basin_close_time = 5
-        self.pole_up_time = 5
+        self.basin_time = config.pole_config['basin_time']
+        self.pole_up_down_time = config.HOIST_UP_DOWN_DURATION
 
         self.pole_interval = config.domain_config['interval']
         self.tank_table      = {}
@@ -53,17 +52,24 @@ class Predict:
     def init_hoist_position_table(self):
         for k, v in self.Line.Poles.dict.items():
             position = v.position
-            self.hoist_position_table[k] = {0: v.position}
+            self.hoist_position_table[k] = {0: position}
+        for k, v in self.Line.Gears.dict.items():
+            position = v.position
+            self.hoist_position_table[k] = {0: position}
 
     def init_hoist_table(self):
         for k, v in self.Line.Poles.dict.items():
             self.hoist_table[k] = P.closed(-1, -1)
+        for k, v in self.Line.Gears.dict.items():
+            self.hoist_table[k] = P.closed(-1 ,-1)
 
     def init_tank_hoist_table(self):
         for k, v in self.Line.Poles.dict.items():
-            
             for tank in self.Line.Slots.array:
-                
+                self.tank_hoist_table[k][tank] = P.open(-1, -1)
+
+        for k, v in self.Line.Gears.dict.items():
+            for tank in self.Line.Slots.array:
                 self.tank_hoist_table[k][tank] = P.open(-1, -1)
     
     def gen_hoist_tank_table(self, product):
@@ -82,10 +88,7 @@ class Predict:
                 cur_tank = init_positiion
             else:
                 cur_tank = tank_table[stage - 1][1]
-            # wait_time 包含等待， 下降， 开水盆的时间
-            wait_time = process[stage].wait + self.pole_unload_time + self.basin_open_time * process[stage].down_num
-            # drip_time 包含滴水， 上升， 合水盆时间
-            drip_time = process[stage].drip + self.pole_load_time + self.basin_close_time * process[stage].down_num
+            drip_time, wait_time = self.get_wait_drip_time(stage, process)
             pole = data[1]
             start_time = data[0].lower
             next_tank = tank_table[stage][1]
@@ -112,14 +115,39 @@ class Predict:
                     hoist, interval = data
                     self.hoist_table[hoist] |= interval
    
+    def get_wait_drip_time(self, stage, process):
+        # 判断是否是交换车， 如果时间换车的话就不需要滴水合等待
+        tanks = process[stage].tanks
+        if stage + 1 in process:
+            next_tanks = process[stage + 1].tanks
+            if set(tanks) < set(self.Line.Slots.gear_slot) and set(next_tanks) < set(self.Line.Slots.gear_slot):
+                drip_time = 0
+                wait_time = self.gear_move_time
+                return drip_time, wait_time
+        # drip_Time N次上升，滴水， 合水盆时间, 滴水用的是当前stage的滴水时间
+        drip, basin, up_num= process[stage].drip, process[stage].basin, process[stage].up_num
+        drip_time = self.pole_load_time + up_num * self.pole_up_down_time + basin * self.basin_time + drip
+        # wait_time N次下降，滴水， 开水盆时间， 等待时间用的是下一个阶段的等待时间
+        if stage + 1 in process:
+            wait = process[stage + 1].wait
+            down_num = process[stage + 1].down_num
+        else:
+            wait = 0
+            down_num = 0
+        wait_time = self.pole_unload_time + down_num * self.pole_up_down_time + basin * self.basin_time + wait
+        return drip_time, wait_time
+   
     def get_pole_move_time(self, pole_position, tank, next_tank, stage, process):
-        # wait_time 包含等待， 下降， 开水盆的时间
-        wait_time = process[stage].wait + self.pole_unload_time + self.basin_open_time * process[stage].down_num
-        # drip_time 包含滴水， 上升， 合水盆时间
-        drip_time = process[stage].drip + self.pole_load_time + self.basin_close_time * process[stage].down_num
+        # 如果是交换车移动直接给出empty move = 0， load_move_time = 交换车在两个槽位的移动时间 
+        if tank in self.Line.Slots.gear_slot and next_tank in self.Line.Slots.gear_slot:
+            empty_move_time = 0
+            load_move_time = self.gear_move_time
+            return empty_move_time, load_move_time
+        drip_time, wait_time = self.get_wait_drip_time(stage, process)
+        
         empty_move_time = self.pole_start_time + self.pole_stop_time + abs(pole_position - tank)
-        if empty_move_time <= 10:
-            empty_move_time = 10
+        # if empty_move_time <= 5:
+            # empty_move_time = 10
         if pole_position == tank:
             empty_move_time = 0
         load_move_time = self.pole_start_time + self.pole_stop_time + abs(next_tank - tank) + wait_time + drip_time
@@ -198,25 +226,40 @@ class Predict:
 
     def update_tank_table(self, tank_table, cur_tank, process):
         last_tank = cur_tank
-        for k, v in tank_table.items():
-            # 每个工艺占据该槽位的时间除了自己的浸泡时间还要加上把物品提上来的时间
-            # wait_time 包含等待， 下降， 开水盆的时间
-            wait_time = process[k].wait + self.pole_unload_time + self.basin_open_time * process[k].down_num
-            # drip_time 包含滴水， 上升， 合水盆时间
-            drip_time = process[k].drip + self.pole_load_time + self.basin_close_time * process[k].down_num
-            self.tank_table[last_tank] |= P.open(v[0].lower - wait_time, v[0].upper + drip_time)
-            last_tank = v[1]
+
+        for stage, v in tank_table.items():
+            drip_time, wait_time = self.get_wait_drip_time(stage, process)
+            # 如果是交换槽，那么占据的时间等于从当前槽位开始，到下一个槽位结束的时间
+            if last_tank in self.Line.Slots.gear_slot:
+                next_stage = stage + 1
+                if next_stage in tank_table:
+                    next_stage_end = tank_table[next_stage][0].upper
+                else:
+                    next_stage_end = v[0].upper
+                self.tank_table[last_tank] |= P.open(v[0].lower - wait_time, next_stage_end + drip_time + self.gear_move_time)
+                last_tank = v[1]
+            else:
+                # 每个工艺占据该槽位的时间除了自己的浸泡时间还要加上把物品提上来的时间
+                self.tank_table[last_tank] |= P.open(v[0].lower - wait_time, v[0].upper + drip_time)
+                last_tank = v[1]
 
     def update_hoist_table(self, hoist_table):
         for k, v in hoist_table.items():
             if v:
-                pole = v[1]
-                # if v[0].upper - v[0].lower < self.pole_start_time + self.pole_stop_time + self.pole_move_time:
-                #     self.hoist_table[pole] |= P.closed(v[0].lower, v[0].upper + self.pole_start_time + self.pole_stop_time + self.pole_move_time)
-                # else:
-                #     self.hoist_table[pole] |= v[0]
-                
-                self.hoist_table[pole] |= P.closed(v[0].lower - MOVE_RELAX_TIME, v[0].upper)
+                if 'pole' in v[1]:
+                    pole = v[1]
+                    if v[0].upper - v[0].lower < self.pole_start_time + self.pole_stop_time + self.pole_move_time:
+                        self.hoist_table[pole] |= P.closed(v[0].lower - MOVE_RELAX_TIME, v[0].upper)
+                    else:
+                        self.hoist_table[pole] |= v[0]
+                # 如果是交换车， 那么它占据下一个天车把物品从交换车拿走， 然后移动回去gear begin的时间
+                elif 'gear' in v[1]:
+                    next_stage = k + 1
+                    if next_stage in hoist_table:
+                        next_stage_start = hoist_table[next_stage][0].lower
+                    else:
+                        next_stage_start = v[0].upper 
+                    self.hoist_table[pole] |= P.closed(v[0].lower - MOVE_RELAX_TIME, next_stage_start + self.gear_move_time)
         
     def update_hoist_position_table(self, hoist_position_table):
         for k, v in hoist_position_table.items():
@@ -227,13 +270,13 @@ class Predict:
         poles = copy.deepcopy(self.Line.Poles.dict)
   
         hoist_position_table = copy.deepcopy(self.hoist_position_table)
-        cur_stage = product.stage               # 当前stage
-        max_stage = max(product.processes) + 1  # 最大的stage
+        cur_stage = product.stage           # 当前stage
+        max_stage = max(product.processes) + 1 # 最大的stage
 
         self.tank_result = {stage:False for stage in range(cur_stage, max_stage)}    # 记录每个槽位的最优解
         self.hoist_result = {stage:False for stage in range(cur_stage, max_stage)}   # 记录每个天车的最优解
 
-        self.hoist_position_result = {k:{} for k,v in poles.items()}  # 实时记录天车的位置，用来求天车的移动时间
+        # self.hoist_position_result = {k:{} for k,v in poles.items()}  # 实时记录天车的位置，用来求天车的移动时间
         self.tank_flag = {stage:P.open(0, 0) for stage in range(cur_stage, max_stage)} # 记录槽位是否被访问过
 
         process = product.processes # 流程
@@ -243,6 +286,7 @@ class Predict:
         # 求出可用的天车
         next_tanks = process[cur_stage + 1].tanks
         pole = [v for k, v in poles.items() if product.position in v.interval and next_tanks[-1] in v.interval][0]
+        
         # 获取天车的位置
         pole_position = self.get_pole_position(cur_time, pole, hoist_position_table)
         # 求天车移动到物品当前所在槽位的empty move 的时间
@@ -270,7 +314,7 @@ class Predict:
             self.gen_hoist_tank_table(product)
             
             print(self.tank_result)
-            # print(self.hoist_result)
+            print(self.hoist_result)
             return product
         return False
         
@@ -289,7 +333,7 @@ class Predict:
             if not self.tank_flag[stage] or (self.tank_flag[stage] and self.tank_result[stage][0].lower > start_time):
                 self.tank_result = {stage:False for stage in range(first_stage, max_stage)}    # 清空解
                 self.hoist_result = {stage:False for stage in range(first_stage, max_stage)}
-                self.hoist_position_result = {k:{} for k,v in self.Line.Poles.dict.items()}
+                # self.hoist_position_result = {k:{} for k,v in self.Line.Poles.dict.items()}
                 self.tank_flag = {stage:P.open(0, 0) for stage in range(first_stage, max_stage)}  
                 self.tank_result[stage] = (P.closed(start_time, start_time +process[stage].lower_bound), tank)  # 记录最优解
                 self.tank_flag[stage] = True  # 标记tank已经被占用
@@ -309,10 +353,16 @@ class Predict:
         else:
             lb, ub = process[stage].lower_bound,  process[stage].upper_bound, # 当前阶段的要求
         next_tanks = process[stage + 1].tanks
-        try:
+        if tank in self.Line.Slots.gear_slot and set(next_tanks) < set(self.Line.Slots.gear_slot):
+
+            pole = None
+            for _, gear in self.Line.Gears.dict.items():
+                if gear.begin == tank:
+                    pole = gear
+        else:
+
             pole = [v for k, v in self.Line.Poles.dict.items() if tank in v.interval and next_tanks[-1] in v.interval][0]
-        except:
-            ipdb.set_trace()
+        
         min_end = start_time + lb  # 完成此阶段所需的最早结束时间
         max_end = end_time + ub    # 完成此阶段所需的最晚结束时间
         # 计算可用的pole和tank时间区间
@@ -320,7 +370,7 @@ class Predict:
         pole_interval = P.open(min_end - 50, max_end + 50)  # pole可用时间区间
         # 计算当前可用tank的时间区间（排除了已经被占用的时间段和超出lb和ub范围的时间段。
         available_tank_interval = tank_interval - self.tank_table[tank]
-        # 计算pole的实际可用时间区间（排除了已经被占用的时间段）。
+        # 计算pole的实际可用时间区间（排除了已经被占用的时间段。
         available_pole_interval = pole_interval - self.hoist_table[pole.name]
        
         # 选一个next_tank
@@ -339,11 +389,6 @@ class Predict:
                     empty_move_time, load_move_time = self.get_pole_move_time(pole_position, tank, next_tank, stage, process)
                     api &= self.get_available_pole_interval(api, tank, next_tank, pole, empty_move_time, load_move_time)
                     for ap in api:
-                        # 对每一个可用的天车区间都要满足
-                        # ap.upper - ap.lower >= empty_move_time + load_move_time
-                        # if ap.lower <= ati.lower + lb - empty_move:
-                        #    ap.lower + empty_move_time - lb <= max_start
-                        # 
                              
                         if ap.upper - ap.lower >= empty_move_time + load_move_time: 
 
@@ -359,7 +404,6 @@ class Predict:
                             res = self.predict(stage + 1, min_end + load_move_time, max_end + load_move_time, max_end + load_move_time, next_tank, hoist_pos_table, max_stage, first_stage, process, cur_time, process_start_time) 
                             
                             if res:
-                                
                                 upper = res[0] - load_move_time
                                 lower = max(ati.lower, upper - ub)
                                 if not (P.open(lower, upper) & self.tank_table[tank]):
@@ -367,8 +411,9 @@ class Predict:
                                     self.tank_flag[stage] = True
                                     self.tank_result[stage] = best_solution
                                     self.hoist_result[stage + 1] = (P.open(res[0] - empty_move_time - load_move_time, res[0]), pole.name)
-                                    self.hoist_position_result[pole.name][res[0] - load_move_time] = tank
-                                    self.hoist_position_result[pole.name][res[0]] = next_tank
+
+                                    # self.hoist_position_result[pole.name][res[0] - load_move_time] = tank
+                                    # self.hoist_position_result[pole.name][res[0]] = next_tank
                                     
                                     return best_solution[0].lower, best_solution[1]
         return None

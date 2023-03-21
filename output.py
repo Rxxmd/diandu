@@ -5,6 +5,7 @@ from datainit import plcApi
 from threading import Thread
 import time
 import re
+import sys
 from watchpoints import watch
 import ipdb
 output_data = {}
@@ -29,8 +30,9 @@ class Output(multiprocessing.Process):
         self.pole_load_time   = config.pole_config['pole_hangon_duration']
         self.pole_unload_time = config.pole_config['pole_hangoff_duration']
         self.gear_move_time   = config.gear_config['gear_moving_duration']
-        self.basin_close_time = config.pole_config['basin_close_time']
-        self.basin_open_time =  config.pole_config['basin_open_time']
+        self.basin_time = config.pole_config['basin_time']
+        self.pole_up_down_time = config.HOIST_UP_DOWN_DURATION
+        self.pole_nums = config.pole_config['poles']
     
     def __init_ready_execute_actions__(self):           ## 初始化self.ready_execute_actions
         for pole in self.poles:                         ##            
@@ -71,7 +73,8 @@ class Output(multiprocessing.Process):
     
     def _handle_rise(self, start, action):
         pole_num = action[1]
-        plcApi.rise(pole_num, 1, 0)
+        up_num = action[2]
+        plcApi.rise(pole_num, up_num, 0)
         return True
     
     def _handle_wait(self, start, action):
@@ -80,15 +83,17 @@ class Output(multiprocessing.Process):
         return True
     
     def _handle_down(self, start, action):
-        pole_num, tank, stage = action[1], action[2], action[3]
-        plcApi.down(pole_num, 1, 0)
+        _, pole_num, down_num, tank, stage = action
+        plcApi.down(pole_num, down_num, 0)
         plcApi.write_products_stage(tank, stage)
         return True
     
+    def _handle_basin(self, start, action):
+        pole_num, operation = action[1], action[2]
+        plcApi.basin_operation(pole_num, operation=operation)
+
     def _handle_action_queue(self, saction):
         start, action = saction
-        
-        
         act = action[0]
         res = False
         if 'below-move' in act:
@@ -101,8 +106,10 @@ class Output(multiprocessing.Process):
             res = self._handle_down(start, action)
         elif 'wait' == act:
             res = self._handle_wait(start, action)
-        # if res:
-        #     print(f'{time.time() - self.init_time:5.2f}', saction)
+        elif 'basin' == act:
+            res = self._handle_basin(start, action)
+        if res:
+            print(f'{time.time() - self.init_time:5.2f}', saction)
         return res
     
     def check_all_poles_signal(self, poles):
@@ -124,7 +131,8 @@ class Output(multiprocessing.Process):
         '''
         if time.time() - self.init_time - self.error_time > self.plan_time:
             self.plan_time = time.time() - self.init_time - self.error_time
-            self.to_plan_queue.put({'out_time':time.time() - self.init_time - self.error_time})
+            if self.to_plan_queue.empty():
+                self.to_plan_queue.put({'out_time':self.plan_time})
         for pole, al in self.ready_execute_actions.items():
             pole_queue = self.actions_queue[pole]
             # 如果是不需要等待的直接执行
@@ -219,34 +227,58 @@ class Output(multiprocessing.Process):
             _, name, pole, slot, product, _ = re.split(' |\(|\)',act)
             pole_num = int(self.poles[pole].order_num)
             process = self.craft[craft][stage]
+            last_stage_process = self.craft[craft][stage - 1]
             if 'hangup' in name:
+                # drip_Time N次上升，滴水， 合水盆时间, 滴水用的是当前stage的滴水时间
+                drip, basin, up_num= last_stage_process.drip, last_stage_process.basin, last_stage_process.up_num
                 # 如果是hangup，根据craft 和 stage 替换成上升，滴水，合水盆
                 # 上升
                 self.poles[pole].up_down = 3
-                temp = ('rise', pole_num)
+                temp = ('rise', pole_num, up_num)
                 self.actions_queue[pole].put((start, temp))
+                start += self.pole_load_time
                 # 滴水
-                drip = process.drip
-                if drip > 0:
-                    temp = ('wait', pole_num, drip)
-                    self.actions_queue[pole].put((start + self.pole_load_time, temp))
+                while drip > 0:   
+                    drip_time = drip
+                    if drip > 99:   #  因为滴水可传入的秒数最大就是99s
+                        drip_time = 99
+                    temp = ('wait', pole_num, drip_time)
+                    self.actions_queue[pole].put((start, temp))
+                    drip -= drip_time
+                    start += drip_time
+                # 合水盆
+                if basin == 1:
+                    # 参数close表示合水盆
+                    temp = ('basin', pole_num, 'close')
+                    self.actions_queue[pole].put((start, temp))
 
             elif 'hangoff' in name:
-                # 如果是hangoff，根据craft 和 stage 替换成下降，等待，开水盆
+                # 如果是hangoff，根据craft 和 stage 替换成,开水盆,等待,下降
                 # 等待
+                basin = last_stage_process.basin
+                down_num = process.down_num
                 wait = process.wait
+                # 开水盆
+                if basin == 1:
+                    temp = ('basin', pole_num, 'open')
+                    start += self.basin_time
                 if wait < 0:
                     assert '等待时间小于0'
-                if wait > 0:
-                    temp = ('wait', pole_num, wait)
+                # 等待
+                while wait > 0:
+                    wait_time = wait
+                    if wait > 99:
+                        wait_time = 99
+                    temp = ('wait', pole_num, wait_time)
                     self.actions_queue[pole].put((start, temp))
+                    wait -= wait_time
+                    start += wait_time
                 # 写入步序
                 tank = self.poles[pole].position
-                # temp = ('write_stage', tank, stage + 1)
                 # 下降
                 self.poles[pole].up_down = 1
-                temp = ('down', pole_num, tank, stage + 1)
-                self.actions_queue[pole].put((start + wait, temp))
+                temp = ('down', pole_num, down_num, tank, stage + 1)
+                self.actions_queue[pole].put((start, temp))
        
         def _handle_start_action(start, act, duration):
             _, _, pole, _ = re.split(' |\(|\)',act)
@@ -284,7 +316,7 @@ class Output(multiprocessing.Process):
         while True:
             self.__output_actions_to_plc__()
     
-    def check_product(self):
+    def check_line(self):
         while True:
             # 查看上下料槽位是否有飞巴
             bar_positions = plcApi.get_bar_position(self.Line.Slots.stocking)
@@ -305,13 +337,19 @@ class Output(multiprocessing.Process):
                     if empty_slot:
                         self.to_plan_queue.put({'empty_slot': empty_slot})
                         self.stocking_bars = []
-            time.sleep(3)
+            # 如果检测到天车不是自动状态，就发信号给plan然后两个进程都停止
+            # if not plcApi.get_hoist_auto(self.pole_nums):
+            #     print(f'检测到天车不是自动状态')
+            #     self.to_plan_queue.put({'stop': True})
+            #     ipdb.set_trace()
+            #     sys.exit()
             
+            time.sleep(3)
 
     def run(self):
         t1 = Thread(target=Output.get_output_form_algorithm, args = (self, ))
         t2 = Thread(target=Output.send_output_to_plc, args = (self, ))
-        t3 = Thread(target=Output.check_product, args=(self, ))
+        t3 = Thread(target=Output.check_line, args=(self, ))
         t1.start()
         t2.start()
         t3.start()

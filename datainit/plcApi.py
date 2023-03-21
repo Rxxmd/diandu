@@ -149,7 +149,7 @@ def rise(pole_num, N, M):
             M : 0 单飞巴， 1双升降第一支飞巴, 2双升降第二支飞巴 , 3双升降飞巴
     '''
 
-    N = int(f'{N - 1}00', 16)
+    N = int(f'{N}00', 16)
     data = RISE_CODE + N + M
     __write(pole_num, [data])
     # 判断天车是否在下限
@@ -169,7 +169,7 @@ def down(pole_num, N, M):
             N : 需要下降的次数， 1 表示一次
             M : 0 单飞巴， 1双升降第一支飞巴, 2双升降第二支飞巴 , 3双升降飞巴
     '''
-    N = int(f'{N - 1}00', 16)
+    N = int(f'{N}00', 16)
     data = DOWN_CODE + N  + M
     __write(pole_num, [data])
     # 判断天车是否在上限

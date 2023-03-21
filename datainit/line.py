@@ -33,7 +33,7 @@ class Products:
             state.append(('slot_not_available', f'slot{position}'))
         parser.state = tuple(state)
         parser.objects['product'].append(name)
-        
+       
         # create product
         product = Product(name, stage, ProcessNumber, self.crafts[ProcessNumber], position, process_start_time)
         self.dict[ProcessNumber].append(product)
@@ -49,6 +49,7 @@ class Process:
     tanks: list = field(default_factory = list)
     wait: int = 0
     drip: int = 0
+    basin: bool = False
     up_num: int = 0
     down_num: int = 0
 
@@ -69,10 +70,12 @@ class Craft:
             # 过滤出某个工艺的所有流程信息
             processes = df[df.ProcessNumber == process_number]
             # 转换数据类型
+     
             processes['StepNumber'] = processes['StepNumber'].astype(int)
             processes['TankNumber'] = processes['TankNumber'].astype(int)
             processes['DipTime'] = processes['DipTime'].astype(int)
             processes['UpCount'] = processes['UpCount'].astype(int)
+            processes['DripTray'] = processes['DripTray'].astype(int)
             processes['WaitTime'] = processes['WaitTime'].astype(int)
             processes['DipTimeUpLimit'] = processes['DipTimeUpLimit'].astype(int)
             processes['PushWaterCount'] = processes['PushWaterCount'].astype(int)
@@ -89,8 +92,9 @@ class Craft:
                 down_num    = group['PushWaterCount'].iloc[0]
                 lower_bound = group["DipTime"].iloc[0]
                 upper_bound = group['DipTimeUpLimit'].iloc[0]
+                basin = group['DripTray'].iloc[0]
 
-                process = Process(lower_bound, upper_bound, tanks, wait, drip, up_num, down_num)
+                process = Process(lower_bound, upper_bound, tanks, wait, drip, basin, up_num, down_num)
                 craft[step] = process
             # 把流程保存在Craft类中的dict            
             self.dict[process_number] = craft
@@ -135,27 +139,27 @@ class Poles:
         for s in state:
             if 'pole_position' in s:
                 pole = s[1]
-                position = int(s[2][4:])
-                self.dict[pole].position = position
+                if pole in self.dict:
+                    position = int(s[2][4:])
+                    self.dict[pole].position = position
     
     def __repr__(self):
         return str(self.__dict__)
 
-class Gear:
-    def __init__(self, name, position, region) -> None:
-        self.name = name,
-        self.product = None
-        self.position = position,
-        self.region = region,
-        self.begin = region[0]
-        self.end = region[1]
 
-    def __repr__(self):
-        return str(self.__dict__)
+@dataclass
+class Gear:
+    name: str
+    product: str
+    position: int
+    region: tuple
+    begin: int
+    end: int
 
 class Gears:
     def __init__(self, config):
         self.dict = {}
+        self.parse_gears(config)
     
     def parse_gears(self, config):
         gears = config['gears']
@@ -164,37 +168,49 @@ class Gears:
 
         for name, positon, region in zip(gears, gears_position, gears_region):
             name = 'gear' + str(name)
-            gear = Gear(name, positon, region)
+            begin = region[0]
+            end = region[1]
+            product = None
+            gear = Gear(name, product, positon, region, begin, end)
+            
             self.dict[name] = gear           
-
+   
+    def update_gear_position(self, state):  
+        for s in state:
+            if 'pole_position' in s:
+                gear = s[1]
+                if gear in self.dict:
+                    position = int(s[2][4:])
+                    self.dict[gear].position = position
+   
     def __repr__(self):
         return str(self.__dict__)
 
 class Slots:
     def __init__(self, config):
-        
         self.array = list(config['slots'])
         self.empty = list(config['empty_slot'])
         self.blanking = config['blanking_slot']
         self.stocking = config['stocking_slot']
         self.disable = config['disable_slot']
+        self.gear_slot = config['gears_begin_slot'] + config['gears_end_slot']
 
-    ###### 真实生产线需要修改
+    #### 真实生产线需要修改
     def set_blanking_slot_empty(self):
         for slot in self.blanking:
             if slot not in self.empty:
                 self.empty.append(slot)   
 
-    def corresponding_slot(self, pole):
-        region = pole.interval
-        if pole.position == region.lower_bound and region.lower_bound in self.gears_begin:
-            return region.upper_bound
-        elif pole.position == region.upper_bound and region.upper_bound in self.gears_begin:
-            return region.lower_bound
-        elif pole.position == region.lower_bound and region.lower_bound in self.gears_end:
-            return region.upper_bound
-        elif pole.position == region.upper_bound and region.upper_bound in self.gears_end:
-            return region.lower_bound
+    # def corresponding_slot(self, pole):
+        # region = pole.interval
+        # if pole.position == region.lower_bound and region.lower_bound in self.gears_begin:
+        #     return region.upper_bound
+        # elif pole.position == region.upper_bound and region.upper_bound in self.gears_begin:
+        #     return region.lower_bound
+        # elif pole.position == region.lower_bound and region.lower_bound in self.gears_end:
+        #     return region.upper_bound
+        # elif pole.position == region.upper_bound and region.upper_bound in self.gears_end:
+        #     return region.lower_bound
 
     def __repr__(self):
         return str(self.__dict__)

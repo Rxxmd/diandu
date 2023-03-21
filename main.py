@@ -74,7 +74,11 @@ if __name__ == '__main__':
         p1.start()
         p2.start()
     finally:
-        subprocess.run(f'rm *.pddl output output.sas plan.validation *sas_plan ', shell=True)
+        subprocess.run(f'rm *.pddl output output.sas plan.validation *sas_plan planSchedule console_output.txt compileSHE.exe.* ', shell=True)
+
+
+
+        
     # plan = Planning(_config)
     # plan.execute()
 # plcApi.below_move(1, 2)

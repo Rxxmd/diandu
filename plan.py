@@ -8,6 +8,7 @@ import subprocess
 import ipdb
 import utils
 import time
+import sys
 from algorithm.predict import Predict
 
 class Planning:
@@ -33,8 +34,8 @@ class Planning:
         self.pole_load_time   = config.pole_config['pole_hangon_duration']
         self.pole_unload_time = config.pole_config['pole_hangoff_duration']
         self.gear_move_time   = config.gear_config['gear_moving_duration']
-        self.basin_close_time = config.pole_config['basin_close_time']
-        self.basin_open_time =  config.pole_config['basin_open_time']
+        self.basin_time = config.pole_config['basin_time']
+        self.pole_up_down_time = config.HOIST_UP_DOWN_DURATION
         self.pole_interval = config.HOIST_INTERVAL
         self.cut_pole = None
         self.predict_table = defaultdict(list)
@@ -105,20 +106,20 @@ class Planning:
             把物品加入到 slef.Line.Products
         '''
         # 从PLC 读取飞巴的位置, 工艺流程号， 步序
-        bar_positions = PLC.get_bar_position(self.Line.Slots.stocking)
-        craft_numbers = PLC.get_products_craft(self.Line.Slots.stocking) 
-        stage_numbers = PLC.get_products_stage(self.Line.Slots.stocking)
+        # bar_positions = PLC.get_bar_position(self.Line.Slots.stocking)
+        # craft_numbers = PLC.get_products_craft(self.Line.Slots.stocking) 
+        # stage_numbers = PLC.get_products_stage(self.Line.Slots.stocking)
         
-        # 把每个位置的飞巴都加入 self.Line.Products
-        if bar_positions and any(bar_positions.values()):
-            positions = [k for k ,v in bar_positions.items() if v == 1]
-            for pos in positions :
-                if not self.lock_stocking_slot[pos]:
-                    print(f'检测到第{pos}号槽位有物品')
-                    stage = stage_numbers[pos]
-                    craft_number = craft_numbers[pos]
-                    self.lock_stocking_slot[pos] = True
-                    self.Line.Products.add_product(self.parser, pos, craft_number, stage)
+        # # 把每个位置的飞巴都加入 self.Line.Products
+        # if bar_positions and any(bar_positions.values()):
+        #     positions = [k for k ,v in bar_positions.items() if v == 1]
+        #     for pos in positions :
+        #         if not self.lock_stocking_slot[pos]:
+        #             print(f'检测到第{pos}号槽位有物品')
+        #             stage = stage_numbers[pos]
+        #             craft_number = craft_numbers[pos]
+        #             self.lock_stocking_slot[pos] = True
+        #             self.Line.Products.add_product(self.parser, pos, craft_number, stage)
         # 对每个物品都进行预排序
         for craft, products in self.Line.Products.dict.items():
             if not products:
@@ -135,6 +136,9 @@ class Planning:
                 return True
 
     def accept_output_data(self, out2plan):
+        '''
+            接收output模块传过来的数据
+        '''
         while not out2plan.empty():
             data = out2plan.get()
             if 'empty_slot' in data:
@@ -142,6 +146,8 @@ class Planning:
                 self.check_product(empty_slot)
             elif 'out_time' in data:
                 self.out_time = data['out_time']
+            elif 'stop' in data:
+                sys.exit()
                 
     def check_product(self, empty_slot):
         '''
@@ -150,8 +156,6 @@ class Planning:
         for slot in empty_slot:
             if slot in self.lock_stocking_slot:
                 self.lock_stocking_slot[slot] = False
-                print(self.lock_stocking_slot)
-
 
     '''
         子目标模块
@@ -175,13 +179,36 @@ class Planning:
         '''
         goal = []
         gears = copy.deepcopy(self.Line.Gears.dict)
+        exe_poles = self.get_exe_poles()
         for gear in gears.values():
+            if gear.name in exe_poles:
+                continue
             if gear.product and gear.position == gear.end:
                 pass
             elif not gear.product and gear.position == gear.end:
                 goal.append(f'(pole_position {gear.name} slot{gear.begin})')
             elif gear.product and gear.position == gear.begin:
-                goal.append(f'(product_at {gear.product} slot{gear.end})')
+                state = list(self.parser.state)
+                product = self.products[gear.product]
+                next_slot = 'slot' + str(gear.end)
+                state.append(('target_slot', next_slot, product.name))
+                
+                goal.append(f'(product_at {gear.product} {next_slot})')
+                
+                tank = product.tank_table[product.stage][1]
+                
+                self.predict_table[gear.name].pop(0)
+               
+                self.products[product.name].next_slot = tank
+
+                self.products[product.name].stage += 1
+
+                self.products[product.name].available = False
+
+                self.products[product.name].stage_start = float('inf')
+
+                self.Line.Slots.empty.remove(tank)
+        
         return goal
 
     def gen_pole_goal(self):
@@ -193,6 +220,7 @@ class Planning:
 
         self.Line.Slots.set_blanking_slot_empty()
         exe_poles = self.get_exe_poles()
+        
         # 对每个天车按照预排序的时间先后顺序执行
         pole_goals = {}
         for pole, table in self.predict_table.items():
@@ -205,18 +233,17 @@ class Planning:
                 poles.append(pole)
 
         for pole in poles:
+            
+            if pole in self.Line.Gears.dict or pole in exe_poles:
+                continue
             pole = self.Line.Poles.dict[pole]
           
-            if pole.name in exe_poles:
-                continue
-            
             # 如果天车已经拿到物品了，子目标就是把物品放到下一个槽位
             if pole.select and pole.product and pole.up_down == 3 and pole.product in self.products: 
                 
                 product = self.products[pole.product]
                 
                 if product.position != product.next_slot:
-                    
                     next_slot = 'slot' + str(product.next_slot)
 
                     state.append(('target_slot', next_slot, product.name))
@@ -282,6 +309,7 @@ class Planning:
         return False
         
     def select_product(self, pole, pole_goals):
+       
         # 确定pole的下一个物品
         upper = pole_goals[pole.name][0] - 3
         pname = pole_goals[pole.name][1][0]
@@ -592,9 +620,10 @@ class Planning:
                 process = self.products[product].processes
             if time <= min_end_time:
                 
-                if time <= min_end_time and ('hangup' in act_name or 'move-gear-equip' in act_name):
-                    # drip_time 包含滴水， 上升， 合水盆时间
-                    drip_time = process[stage - 1].drip + self.pole_load_time + self.basin_close_time * process[stage - 1].down_num
+                if time <= min_end_time and 'hangup' in act_name:
+                    # drip_Time N次上升，滴水， 合水盆时间, 滴水用的是当前stage的滴水时间
+                    drip, basin, up_num= process[stage - 1].drip, process[stage - 1].basin, process[stage - 1].up_num
+                    drip_time = self.pole_load_time + up_num * self.pole_up_down_time + basin * self.basin_time + drip
                     output_actions.append((time, act_name, drip_time))
 
                     # 记录浸泡时间
@@ -603,15 +632,19 @@ class Planning:
                     else:
                         self.record_time[product][-1] = self.time - self.record_time[product][-1]
                 
-                elif time <= min_end_time and ('hangoff' in act_name or 'move-gear-equip' in act_name):
-                    # wait_time 包含等待， 下降， 开水盆的时间
-                    wait_time = process[stage - 1].wait + self.pole_unload_time + self.basin_open_time * process[stage - 1].down_num
+                elif time <= min_end_time and 'hangoff' in act_name:
+                    # wait_time N次下降，滴水， 开水盆时间， 等待时间用的是下一个阶段的等待时间
+                    basin = process[stage - 1].basin
+                    wait = process[stage + 1].wait
+                    down_num = process[stage + 1].down_num
+                    wait_time = self.pole_unload_time + down_num * self.pole_up_down_time + basin * self.basin_time + wait
                     output_actions.append((time, act_name, wait_time))
                     #记录浸泡时间
                     self.record_time[product].append(self.time + time + duration)
 
                     self.products[product].process_start_time = self.time + time + duration
                     self.products[product].available = False
+                
                 else:
                     output_actions.append((time, act_name, duration))
                     
@@ -648,17 +681,18 @@ class Planning:
                         
                         tem_act = copy.deepcopy(action)
                         tem_act = utils.replace_param(tem_act, sp[1:])
-                        
+                       
                         self.Actions.append((self.time + time, tem_act, 'at start'))
                         self.Actions.append((self.time + time + duration, tem_act, 'at end'))
-                        if 'hang' in act:
-                            product = tem_act.parameters[-1]
-                            stage = self.products[product].stage - 1
-                            craft = self.products[product].craft
-                            plan2out.put({'action': (self.time + time, act, duration), 'poles': poles, 'stage': stage, 'craft': craft})
-                        else:
-                            plan2out.put({'action': (self.time + time, act, duration), 'poles': poles})
-                        break
+
+                        # if 'hang' in act:
+                        #     product = tem_act.parameters[-1]
+                        #     stage = self.products[product].stage
+                        #     craft = self.products[product].craft
+                        #     plan2out.put({'action': (self.time + time, act, duration), 'poles': poles, 'stage': stage, 'craft': craft})
+                        # else:
+                        #     plan2out.put({'action': (self.time + time, act, duration), 'poles': poles})
+                        # break
     
     def update_state(self, actions_name, min_end_time, stop_time, plan2out):
         
@@ -666,8 +700,8 @@ class Planning:
         
         for time, act, status in sorted(self.Actions, key = lambda action: action[0]):
                 if time <= self.time + min_end_time:
-                    # print(f'{time} {act.name} {act.parameters}')
-               
+                    print(f'{time} {act.name} {act.parameters}')
+
                     self.parser.state = utils.apply(act, status, self.parser.state)
                     
                     if 'hangoff' in act.name or 'hangup' in act.name or 'move-gear-equip' in act.name or 'start-moving' in act.name:
@@ -728,8 +762,8 @@ class Planning:
             self.Line.Poles.dict[pole].stopping = False
         
         if product in self.products:
+           
             if 'hangoff' in action.name and status == 'at start':
-                
                 state = list(self.parser.state)
                 self.Line.Poles.dict[pole].stopping = True
                 state.remove(('pole_start_moving', pole))
@@ -749,7 +783,6 @@ class Planning:
                 self.Line.Poles.dict[pole].product = None
                 self.Line.Poles.dict[pole].select = False
                 self.Line.Poles.dict[pole].up_down = 1
-                
             
             elif 'hangup' in action.name and status == 'at start':
                 
@@ -766,7 +799,6 @@ class Planning:
                 
                 self.Line.Poles.dict[pole].mid = True
                 self.Line.Poles.dict[pole].product = product
-                   
 
             elif 'hangup' in action.name and status == 'at end':
                 position = self.products[product].position
@@ -783,24 +815,20 @@ class Planning:
             
             if 'hangoff-pole-exchanging' in action.name and status == 'at end':
                 gear = action.parameters[1]
-                # self.products[product].pole = gear
-                # self.products[product].select = True
-                
-                self.Line.Poles.dict[gear].product = product
-                # self.Line.Poles.dict[gear].select = True
+                self.Line.Gears.dict[gear].product = product
+         
            
-            # elif ' move-gear-equip' in action.name and status == 'at end':
-            #     gear = action.parameters[0]
+            elif ' move-gear-equip' in action.name and status == 'at end':
+                gear = action.parameters[0]
                 
-            #     self.products[product].pole = None
-            #     self.products[product].select = False
+                self.products[product].pole = None
+                self.products[product].select = False
 
-            #     # self.Line.Poles.dict[gear].select = False
-            #     # self.Line.Poles.dict[gear].product = None
             elif 'hangup-pole-exchanging' in action.name and status == 'at end':
                 gear = action.parameters[1]
-                self.Line.Poles.dict[gear].select = None
-                self.Line.Poles.dict[gear].product = None
+                self.Line.Gears.dict[gear].product = None
+
+            
         else:
             if 'hangoff' in action.name and status == 'at end':
 
@@ -822,23 +850,19 @@ class Planning:
     '''
     def execute(self, plan2out, out2plan):
         # self.Line.Products.add_product(self.parser, 1, 'craft211', db)
-        # self.Line.Products.add_product(self.parser, 1, 'craft211', db)
-        # self.Line.Products.add_product(self.parser, 1, 'craft211', db)
-        # self.Line.Products.add_product(self.parser, 1, 'craft211', db)
-        # self.Line.Products.add_product(self.parser, 1, 'craft211', db)
-        # self.Line.Products.add_product(self.parser, 1, 'craft211', db)
+
         start = 0
         self.error_init()
         while True:
-            # if self.time - start >= 0 and start < 9000:
-            #     self.Line.Products.add_product(self.parser, 1, 1, 1)
-            #     start += 900
-            self.accept_output_data(out2plan)
-            if self.time - self.out_time <= 10:
-                print(self.time, self.out_time)
-                if self.time % 10 == 0:
-                    self.add_product()
-
+            
+            if self.time - start >= 0 and start < 900:
+                self.Line.Products.add_product(self.parser, 1, 1, 1)
+                start += 200
+            
+            self.add_product()
+            # self.accept_output_data(out2plan)
+            
+            if self.time - self.out_time <= 1000 and self.products:
                 self.predict.products = self.products
 
                 goal = self.gen_goal() 
@@ -853,31 +877,27 @@ class Planning:
                     actions_name = self.fliter_actions(actions_name, min_end_time, stop_time)
 
                     actions_name = self.change_move_time(actions_name, stop_time, min_end_time)
-                    self.update_products(actions_name, min_end_time)
+                    actions_name = self.update_products(actions_name, min_end_time)
                 else:
                     min_end_time = 1    
                     actions_name = []
                     stop_time = []
-                # out_actions = self.sort_actions_name(actions_name)
-                # ipdb.set_trace()
-                # if out_actions:
-                #     poles = self.Line.Poles.dict
-                #     plan2out.put({'actions': sorted(out_actions), 'poles': poles})
-                # utils.output(actions_name, self.Line.Poles.dict,  self.time, self.init_time, self.output)
+                
                 self.update_state(actions_name, min_end_time, stop_time, plan2out)                            
                 
                 self.update_products_position()
-
+            
                 self.del_end_products()
 
                 self.Line.Poles.update_pole_position(self.parser.state)
+                self.Line.Gears.update_gear_position(self.parser.state)
                 
                 self.time += min_end_time
                 # if not self.products: 
                 #     return
 
-# plan = Planning(_config)
-# plan.execute(1,1)
+plan = Planning(_config)
+plan.execute(1,1)
 # finally:
 #     subprocess.run(f'rm *.pddl output output.sas plan.validation *sas_plan ', shell=True)
 #     plan.output.close()
