@@ -6,33 +6,33 @@ INFO     translator memory limit: 4096 MB
 INFO     callstring: /usr/bin/python /cygdrive/d/diandu/temporal-planning/fd_copy/builds/release64/bin/translate/translate.py dom.pddl ins.pddl
 time limit 4.94 -> (5, 6)
 Parsing...
-Parsing: [0.000s CPU, 0.010s wall-clock]
+Parsing: [0.000s CPU, 0.006s wall-clock]
 Normalizing task... [0.000s CPU, 0.000s wall-clock]
 Instantiating...
-Generating Datalog program... [0.000s CPU, 0.000s wall-clock]
+Generating Datalog program... [0.000s CPU, 0.001s wall-clock]
 Normalizing Datalog program...
-Normalizing Datalog program: [0.000s CPU, 0.005s wall-clock]
-Preparing model... [0.000s CPU, 0.002s wall-clock]
-Generated 142 rules.
-Computing model... [0.000s CPU, 0.005s wall-clock]
-187 relevant atoms
-584 auxiliary atoms
-771 final queue length
-955 total queue pushes
-Completing instantiation... [0.000s CPU, 0.002s wall-clock]
-Instantiating: [0.015s CPU, 0.014s wall-clock]
+Normalizing Datalog program: [0.016s CPU, 0.012s wall-clock]
+Preparing model... [0.000s CPU, 0.005s wall-clock]
+Generated 302 rules.
+Computing model... [0.079s CPU, 0.066s wall-clock]
+672 relevant atoms
+9921 auxiliary atoms
+10593 final queue length
+10880 total queue pushes
+Completing instantiation... [0.000s CPU, 0.010s wall-clock]
+Instantiating: [0.095s CPU, 0.097s wall-clock]
 Computing fact groups...
 Finding invariants...
 24 initial candidates
-Finding invariants: [0.000s CPU, 0.005s wall-clock]
+Finding invariants: [0.015s CPU, 0.007s wall-clock]
 Checking invariant weight... [0.000s CPU, 0.000s wall-clock]
-Instantiating groups... [0.000s CPU, 0.000s wall-clock]
+Instantiating groups... [0.000s CPU, 0.006s wall-clock]
 Collecting mutex groups... [0.000s CPU, 0.000s wall-clock]
 Choosing groups...
-27 uncovered facts
+129 uncovered facts
 Choosing groups: [0.000s CPU, 0.000s wall-clock]
-Building translation key... [0.000s CPU, 0.000s wall-clock]
-Computing fact groups: [0.000s CPU, 0.006s wall-clock]
+Building translation key... [0.000s CPU, 0.001s wall-clock]
+Computing fact groups: [0.015s CPU, 0.015s wall-clock]
 Building STRIPS to SAS dictionary... [0.000s CPU, 0.000s wall-clock]
 Building dictionary for full mutex groups... [0.000s CPU, 0.000s wall-clock]
 Building mutex information...
@@ -40,96 +40,100 @@ Building mutex information: [0.000s CPU, 0.000s wall-clock]
 Translating task...
 Processing axioms...
 Simplifying axioms... [0.000s CPU, 0.000s wall-clock]
-Processing axioms: [0.000s CPU, 0.000s wall-clock]
-Translating task: [0.000s CPU, 0.001s wall-clock]
-44 effect conditions simplified
+Processing axioms: [0.016s CPU, 0.001s wall-clock]
+Translating task: [0.016s CPU, 0.009s wall-clock]
+246 effect conditions simplified
 0 implied preconditions added
 Detecting unreachable propositions...
 0 operators removed
 0 axioms removed
-16 propositions removed
-Detecting unreachable propositions: [0.000s CPU, 0.001s wall-clock]
-Translator variables: 31
+12 propositions removed
+Detecting unreachable propositions: [0.000s CPU, 0.003s wall-clock]
+Translator variables: 132
 Translator derived variables: 0
-Translator facts: 67
+Translator facts: 301
 Translator goal facts: 1
-Translator mutex groups: 9
-Translator total mutex groups size: 20
-Translator operators: 32
+Translator mutex groups: 6
+Translator total mutex groups size: 49
+Translator operators: 123
 Translator axioms: 0
-Translator task size: 383
+Translator task size: 1724
 warning: could not determine peak memory
-Writing output... [0.000s CPU, 0.001s wall-clock]
-Done! [0.030s CPU, 0.046s wall-clock]
+Writing output... [0.000s CPU, 0.002s wall-clock]
+Done! [0.142s CPU, 0.144s wall-clock]
 INFO     Running preprocessor (release64).
 INFO     preprocessor input: output.sas
 INFO     preprocessor arguments: []
-INFO     preprocessor time limit: 4.815s
+INFO     preprocessor time limit: 4.689s
 INFO     preprocessor memory limit: 4096 MB
 INFO     callstring: /cygdrive/d/diandu/temporal-planning/fd_copy/builds/release64/bin/preprocess < output.sas
-time limit 4.82 -> (5, 6)
+time limit 4.69 -> (5, 6)
 Building causal graph...
 The causal graph is not acyclic.
-19 variables of 31 necessary
-0 of 9 mutex groups necessary.
-30 of 32 operators necessary.
+45 variables of 132 necessary
+0 of 6 mutex groups necessary.
+83 of 123 operators necessary.
 0 of 0 axiom rules necessary.
 Building domain transition graphs...
 solveable in poly time 0
 Building successor generator...
-Preprocessor facts: 43
+Preprocessor facts: 127
 Preprocessor derived variables: 0
-Preprocessor task size: 297
+Preprocessor task size: 1122
 Writing output...
 done
 INFO     Running search (release64).
 INFO     search input: output
 INFO     search arguments: ['--if-unit-cost', '--heuristic', 'hlm,hff=lm_ff_syn(lm_rhw(reasonable_orders=true))', '--search', 'lazy_greedy([hff,hlm],preferred=[hff,hlm])', '--if-non-unit-cost', '--heuristic', 'hlm1,hff1=lm_ff_syn(lm_rhw(reasonable_orders=true,lm_cost_type=one,cost_type=one))', '--heuristic', 'hlm2,hff2=lm_ff_syn(lm_rhw(reasonable_orders=true,lm_cost_type=plusone,cost_type=plusone))', '--search', 'iterated([lazy_greedy([hff1,hlm1],preferred=[hff1,hlm1],cost_type=one,reopen_closed=false),lazy_greedy([hff2,hlm2],preferred=[hff2,hlm2],reopen_closed=false)])', '--always']
-INFO     search time limit: 4.815s
+INFO     search time limit: 4.643s
 INFO     search memory limit: 4096 MB
 INFO     search executable: /cygdrive/d/diandu/temporal-planning/fd_copy/builds/release64/bin/downward
 INFO     callstring: /cygdrive/d/diandu/temporal-planning/fd_copy/builds/release64/bin/downward --if-unit-cost --heuristic 'hlm,hff=lm_ff_syn(lm_rhw(reasonable_orders=true))' --search 'lazy_greedy([hff,hlm],preferred=[hff,hlm])' --if-non-unit-cost --heuristic 'hlm1,hff1=lm_ff_syn(lm_rhw(reasonable_orders=true,lm_cost_type=one,cost_type=one))' --heuristic 'hlm2,hff2=lm_ff_syn(lm_rhw(reasonable_orders=true,lm_cost_type=plusone,cost_type=plusone))' --search 'iterated([lazy_greedy([hff1,hlm1],preferred=[hff1,hlm1],cost_type=one,reopen_closed=false),lazy_greedy([hff2,hlm2],preferred=[hff2,hlm2],reopen_closed=false)])' --always --internal-plan-file sas_plan < output
-time limit 4.82 -> (5, 6)
-reading input... [t=0.000741s]
-done reading input! [t=0.0025262s]
-packing state variables...done! [t=0.0025389s]
-Variables: 19
-Facts: 43
-Bytes per state: 4
-Building successor generator...done! [t=0.0026791s]
-done initalizing global data [t=0.0026828s]
+time limit 4.64 -> (5, 6)
+reading input... [t=0.0008073s]
+done reading input! [t=0.0088442s]
+packing state variables...done! [t=0.0088595s]
+Variables: 45
+Facts: 127
+Bytes per state: 8
+Building successor generator...done! [t=0.0097655s]
+done initalizing global data [t=0.0097704s]
 Initializing Exploration...
 Generating landmarks using the RPG/SAS+ approach
 approx. reasonable orders
 approx. obedient reasonable orders
 Removed 0 reasonable or obedient reasonable orders
-Landmarks generation time: 0.0001377s
-Discovered 5 landmarks, of which 0 are disjunctive and 0 are conjunctive 
-4 edges
+Landmarks generation time: 0.000425s
+Discovered 10 landmarks, of which 0 are disjunctive and 0 are conjunctive 
+9 edges
 Initializing landmarks count heuristic...
-4 initial landmarks, 1 goal landmarks
+8 initial landmarks, 1 goal landmarks
 Initializing LAMA-FF synergy object
 Conducting lazy best first search, (real) bound = 2147483647
+New best heuristic value for <missing>: 2
+New best heuristic value for <missing>: 2
+[g=0, 1 evaluated, 0 expanded, t=0.0109862s, 5964 KB]
+Initial heuristic value for <missing>: 2
+Initial heuristic value for <missing>: 2
 New best heuristic value for <missing>: 1
 New best heuristic value for <missing>: 1
-[g=0, 1 evaluated, 0 expanded, t=0.0033692s, 5776 KB]
-Initial heuristic value for <missing>: 1
-Initial heuristic value for <missing>: 1
+[g=1, 2 evaluated, 1 expanded, t=0.0110281s, 5964 KB]
 Solution found!
-Actual search time: 6.22e-05s [t=0.0034048s]
+Actual search time: 0.0001002s [t=0.0110459s]
 Or got here?
-do-move-gear-equip gear2 slot12 slot1 p0 (1)
-Plan length: 1 step(s).
-Plan cost: 1
+do-start-moving-pole pole3 (1)
+do-move-pole-inverse-1 pole3 slot35 slot34 slot33 slot32 slot31 slot30 (1)
+Plan length: 2 step(s).
+Plan cost: 2
 Expanded 2 state(s).
 Reopened 0 state(s).
 Evaluated 3 state(s).
 Evaluations: 6
-Generated 8 state(s).
+Generated 7 state(s).
 Dead ends: 0 state(s).
 Number of registered states: 3
-Search time: 7.49e-05s
-Total time: 0.0034077s
+Search time: 0.0001144s
+Total time: 0.0110491s
 Solution found.
 Compiling problem: /cygdrive/d/diandu/temporal-planning/bin/compileSHE tdom.pddl tins.pddl > dom.pddl 2> ins.pddl
 ('/cygdrive/d/diandu/temporal-planning', 'release64', 'seq-sat-lama-2011-ni', '5', 4096, 'sas_plan', 'dom.pddl', 'ins.pddl')

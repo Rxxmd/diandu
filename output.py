@@ -23,20 +23,20 @@ class Output(multiprocessing.Process):
         self.to_plan_queue = to_plan_queue
         self.craft = Line.Craft.dict
         self.Line = Line
-        self.stocking_bars = []
-        self.pole_move_time   = config.pole_config['pole_moving_duration']
-        self.pole_stop_time   = config.pole_config['pole_stop_duration']
-        self.pole_start_time  = config.pole_config['pole_start_duration']
-        self.pole_load_time   = config.pole_config['pole_hangon_duration']
-        self.pole_unload_time = config.pole_config['pole_hangoff_duration']
-        self.gear_move_time   = config.gear_config['gear_moving_duration']
-        self.basin_time = config.pole_config['basin_time']
+        self.stocking_bars = [] # 用来存放正在备料的物品
+        self.pole_move_time   = config.POLE_MOVE_DURATION 
+        self.pole_stop_time   = config.POLE_STOP_DURATION
+        self.pole_start_time  = config.POLE_START_DURATION
+        self.pole_load_time   = config.POLE_LOAD_DURATION
+        self.pole_unload_time = config.POLE_UNLOAD_DURATION
+        self.gear_move_time   = config.GEAR_MOVE_DURATION
         self.pole_up_down_time = config.HOIST_UP_DOWN_DURATION
+        self.basin_time = config.BASIN_DURATION
         self.pole_nums = config.pole_config['poles']
     
     def __init_ready_execute_actions__(self):           ## 初始化self.ready_execute_actions
         for pole in self.poles:                         ##            
-            self.ready_execute_actions[pole] = False       ##
+            self.ready_execute_actions[pole] = False    ##
                                                         ##
     
     # def __get_data_from_queue__(self):                  ##
@@ -158,27 +158,18 @@ class Output(multiprocessing.Process):
             min_times = sorted(min_times)
             min_time = min_times[0]
             
-            
-            
             # 找出同一时间执行的所有poles
             poles = [k for k, v in self.ready_execute_actions.items() if v and v[0] == min_time]
             pole_nums = [int(pole[4:]) for pole in poles]
+            # 如果所有的天车的signal都为1，并且当前时间大于最小时间
             if self.check_all_poles_signal(pole_nums) and min_time + self.error_time <= time.time() - self.init_time:
                 for pole in poles:
+                    # 执行动作
                     action = self.ready_execute_actions[pole]
                     self.ready_execute_actions[pole] = False
                     self._handle_action_queue(action)
-                    self.error_time = (time.time() - self.init_time - min_time)
-            # if al is None and not pole_queue.empty():
-            #     action = self.actions_queue[pole].get()
-            #     res = self._handle_action_queue(action)
-            #     if not res:
-            #         self.ready_execute_actions[pole] = action
-            # elif al is not None:
-            #     action = al
-            #     res = self._handle_action_queue(action)
-            #     if res:
-            #         self.ready_execute_actions[pole] = None
+                    # 更新误差时间
+                    self.error_time = time.time() - self.init_time - min_time - 0.5
 
     def __handle_actions__(self):
         '''
@@ -347,8 +338,11 @@ class Output(multiprocessing.Process):
             time.sleep(3)
 
     def run(self):
+        # 这个线程用来获取算法输出的数据
         t1 = Thread(target=Output.get_output_form_algorithm, args = (self, ))
+        # 这个线程用来把结果输出到plc
         t2 = Thread(target=Output.send_output_to_plc, args = (self, ))
+        # 这个线程用来检测天车的状态
         t3 = Thread(target=Output.check_line, args=(self, ))
         t1.start()
         t2.start()

@@ -5,7 +5,7 @@ import ipdb
 import portion as P
 from collections import defaultdict
 COLI_RELAX_TIME = 5
-MOVE_RELAX_TIME = 0
+MOVE_RELAX_TIME = 10
 class Predict:
     def __init__(self, config, Line):
         self.Actions = []   # 保存当前正在执行的动作
@@ -21,12 +21,12 @@ class Predict:
         self.basin_time = config.pole_config['basin_time']
         self.pole_up_down_time = config.HOIST_UP_DOWN_DURATION
 
-        self.pole_interval = config.domain_config['interval']
-        self.tank_table      = {}
-        self.hoist_table     = {}
-        self.tank_hoist_table = defaultdict(dict)
-        self.hoist_position_table = {}   
-        self.tank_select = {}
+        self.pole_interval = config.domain_config['interval'] # 天车之间的间隔
+        self.tank_table      = {}   # 保存槽位被占据的时间段
+        self.hoist_table     = {}   # 保存天车被占据的时间段
+        self.tank_hoist_table = defaultdict(dict) # 保存天车和槽位的对应关系， 用于判断天车是否会碰撞
+        self.hoist_position_table = {}   # 保存天车的位置
+        self.tank_select = {} # 保存槽位被选中的次数
         self.init_tank_select()    
         self.init_tank_table()
         self.init_hoist_table()
@@ -36,13 +36,16 @@ class Predict:
         预判模块
     '''
     def update_Line(self, Line):
+        # 更新产线信息
         self.Line = Line
 
     def init_tank_select(self):
+        # tank_select 是用来检测槽位被选过多少次的
         for tank in self.Line.Slots.array:
             self.tank_select[tank] = 0
 
     def init_tank_table(self):
+        # tank_table 是用来检测槽位被占用的时间段的
         for tank in self.Line.Slots.array:
 
             if tank not in self.tank_table:
@@ -50,20 +53,24 @@ class Predict:
                 self.tank_table[tank] = P.closed(-1, -1)
     
     def init_hoist_position_table(self):
+        # hoist_position_table 是用来检测天车的位置的
         for k, v in self.Line.Poles.dict.items():
             position = v.position
             self.hoist_position_table[k] = {0: position}
+        # 交换车的位置
         for k, v in self.Line.Gears.dict.items():
             position = v.position
             self.hoist_position_table[k] = {0: position}
 
     def init_hoist_table(self):
+        # hoist_table 是用来检测天车被占用的时间段的
         for k, v in self.Line.Poles.dict.items():
             self.hoist_table[k] = P.closed(-1, -1)
         for k, v in self.Line.Gears.dict.items():
             self.hoist_table[k] = P.closed(-1 ,-1)
 
     def init_tank_hoist_table(self):
+        # tank_hoist_table 是用来检测天车和槽位的对应关系的
         for k, v in self.Line.Poles.dict.items():
             for tank in self.Line.Slots.array:
                 self.tank_hoist_table[k][tank] = P.open(-1, -1)
@@ -73,13 +80,14 @@ class Predict:
                 self.tank_hoist_table[k][tank] = P.open(-1, -1)
     
     def gen_hoist_tank_table(self, product):
-        # pole_interval = -(-self.pole_interval // 2) 
         pole_interval = self.pole_interval
         tank_table = product.tank_table
         hoist_table = product.hoist_table
         init_positiion = product.position
         process = product.processes
+        # 生成天车和槽位的对应关系
         for stage, data in hoist_table.items():
+            # 如果天车没有被占用，跳过
             if not data:
                 continue
 
@@ -114,7 +122,7 @@ class Predict:
                 for stage, data in v.hoist_table:
                     hoist, interval = data
                     self.hoist_table[hoist] |= interval
-   
+    
     def get_wait_drip_time(self, stage, process):
         # 判断是否是交换车， 如果时间换车的话就不需要滴水合等待
         tanks = process[stage].tanks
@@ -153,7 +161,7 @@ class Predict:
         load_move_time = self.pole_start_time + self.pole_stop_time + abs(next_tank - tank) + wait_time + drip_time
         
         return empty_move_time, load_move_time
-
+    
     def get_pole_position(self, cur_time, pole, hoist_position_table):
         # 二分查找pole_position
         pole_name = pole.name
@@ -248,8 +256,10 @@ class Predict:
             if v:
                 if 'pole' in v[1]:
                     pole = v[1]
+                    # 如果是天车
                     if v[0].upper - v[0].lower < self.pole_start_time + self.pole_stop_time + self.pole_move_time:
                         self.hoist_table[pole] |= P.closed(v[0].lower - MOVE_RELAX_TIME, v[0].upper)
+                    
                     else:
                         self.hoist_table[pole] |= v[0]
                 # 如果是交换车， 那么它占据下一个天车把物品从交换车拿走， 然后移动回去gear begin的时间
@@ -267,6 +277,7 @@ class Predict:
         pass
 
     def pre_sort_product(self, product, cur_time, max_start):
+        
         poles = copy.deepcopy(self.Line.Poles.dict)
   
         hoist_position_table = copy.deepcopy(self.hoist_position_table)
@@ -285,7 +296,10 @@ class Predict:
 
         # 求出可用的天车
         next_tanks = process[cur_stage + 1].tanks
-        pole = [v for k, v in poles.items() if product.position in v.interval and next_tanks[-1] in v.interval][0]
+        try:
+            pole = [v for k, v in poles.items() if product.position in v.interval and next_tanks[-1] in v.interval][0]
+        except:
+            ipdb.set_trace()
         
         # 获取天车的位置
         pole_position = self.get_pole_position(cur_time, pole, hoist_position_table)
@@ -293,15 +307,8 @@ class Predict:
         first_empty_move_time, _ = self.get_pole_move_time(pole_position, product.position, next_tanks[-1], cur_stage, process)
         # 求第一个空空移动的可用区间
         start_time = cur_time
-        max_start = max_start
-        try:
-            temp = P.open(cur_time - first_empty_move_time, max_start - first_empty_move_time) & ~self.hoist_table[pole.name]
-            start_time = temp.lower + first_empty_move_time
-        except:
-            return False
-
-        if temp.lower < 0:
-            start_time = 0 + first_empty_move_time
+        max_start = max_start + cur_time
+       
         res = self.predict(cur_stage, cur_time, max_start, max_start,  cur_tank, hoist_position_table, max_stage, cur_stage, process, cur_time, product.process_start_time)
         if res:
             self.hoist_result[cur_stage] = (P.closed(start_time - first_empty_move_time, start_time), pole.name)
@@ -312,22 +319,26 @@ class Predict:
             self.update_hoist_table(self.hoist_result)
             self.update_tank_select(self.tank_result, cur_tank)
             self.gen_hoist_tank_table(product)
-            
-            print(self.tank_result)
-            print(self.hoist_result)
+            print(product.tank_table)
             return product
         return False
         
     def predict(self,stage, start_time, end_time, max_start, tank, hoist_pos_table, max_stage, first_stage, process, cur_time, process_start_time):
-    
-        """
-        stage: 当前工艺阶段
-        start_time: 当前工艺阶段开始时间
-        end_time: 当前工艺阶段结束时间
-        max_start: 可以使用的最晚开始时间
-        tank: 当前使用的tank编号  
-        hoist_position_table: 用来实时记录天车位置的表
-        """
+        '''
+            在predict方法中,它首先判断当前阶段是否为最后一个阶段，如果是，
+            则记录最优解并返回最晚完成时间和使用的tank编号。如果不是,则计
+            算可用的pole和tank时间区间,并选一个next_tank。然后,它遍历
+            可用的tank时间区间和pole时间区间,计算空载和装载时间，并计算可
+            用的pole时间区间。最后,它判断当前时间区间是否满足要求，如果满足，
+            则递归调用predict方法,否则继续遍历下一个时间区间。
+            stage: 当前工艺阶段
+            start_time: 当前工艺阶段开始时间
+            end_time: 当前工艺阶段结束时间
+            max_start: 可以使用的最晚开始时间
+            tank: 当前使用的tank编号  
+            hoist_position_table: 用来实时记录天车位置的表
+        '''
+     
         if stage >= max_stage - 1:  # 到达最后一个工艺阶段
             #如果找到更优的解， 清空当前解
             if not self.tank_flag[stage] or (self.tank_flag[stage] and self.tank_result[stage][0].lower > start_time):
@@ -360,9 +371,10 @@ class Predict:
                 if gear.begin == tank:
                     pole = gear
         else:
-
-            pole = [v for k, v in self.Line.Poles.dict.items() if tank in v.interval and next_tanks[-1] in v.interval][0]
-        
+            try:
+                pole = [v for k, v in self.Line.Poles.dict.items() if tank in v.interval and next_tanks[-1] in v.interval][0]
+            except:
+                ipdb.set_trace()
         min_end = start_time + lb  # 完成此阶段所需的最早结束时间
         max_end = end_time + ub    # 完成此阶段所需的最晚结束时间
         # 计算可用的pole和tank时间区间
@@ -415,7 +427,8 @@ class Predict:
                                     # self.hoist_position_result[pole.name][res[0] - load_move_time] = tank
                                     # self.hoist_position_result[pole.name][res[0]] = next_tank
                                     
-                                    return best_solution[0].lower, best_solution[1]
+                                    return best_solution[0].lower, best_solution[1]  
+        
         return None
         
     

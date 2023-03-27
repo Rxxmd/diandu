@@ -69,10 +69,156 @@
     )
     
                 (:durative-action Move-Pole-forward-1
-                :parameters (?p - pole ?s1 - slot ?s2 - slot )
+                :parameters (?p - pole ?s1 - slot ?s2 - slot ?s3 - slot ?s4 - slot ?s5 - slot ?s6 - slot )
                 :duration (= ?duration (pole_moving_duration_each_slot))
                 :condition (and
                     
+                    (over all (pole_start_moving ?p))
+                    (at start (pole_position ?p ?s1))
+                    (at start (pole_available ?p))
+                    (over all (pole_region ?p ?s1))
+                    (over all (pole_region ?p ?s2))
+                    (over all (forward_slot_connection ?s1 ?s2))
+(over all (forward_slot_connection ?s2 ?s3))
+(over all (forward_slot_connection ?s3 ?s4))
+(over all (forward_slot_connection ?s4 ?s5))
+(over all (forward_slot_connection ?s5 ?s6))
+
+                    (at start (slot_have_pole ?s1))
+                    (over all (not (slot_have_pole ?s2)))
+(over all (not (slot_have_pole ?s3)))
+(over all (not (slot_have_pole ?s4)))
+(over all (not (slot_have_pole ?s5)))
+(over all (not (slot_have_pole ?s6)))
+
+                )
+                :effect (and
+                    (at start(not (pole_position ?p ?s1)))
+                    (at end(pole_position ?p ?s2))
+                    (at start (slot_have_pole ?s1))(at start (slot_have_pole ?s2))(at start (slot_have_pole ?s3))(at start (slot_have_pole ?s4))(at start (slot_have_pole ?s5))(at start (slot_have_pole ?s6))
+                    (at end (not (slot_have_pole ?s1)))
+(at end (not (slot_have_pole ?s3)))
+(at end (not (slot_have_pole ?s4)))
+(at end (not (slot_have_pole ?s5)))
+(at end (not (slot_have_pole ?s6)))
+
+                    (at end(slot_have_pole ?s2))
+                    (at start(not (pole_available ?p)))
+                    (at end(pole_available ?p))
+                )
+            )
+            
+                (:durative-action Move-Pole-forward-2
+                :parameters (?p - pole ?s1 - slot ?s2 - slot ?s3 - slot ?s4 - slot ?s5 - slot )
+                :duration (= ?duration (pole_moving_duration_each_slot))
+                :condition (and
+                    (over all(border_slot ?s5))
+
+                    (over all (pole_start_moving ?p))
+                    (at start (pole_position ?p ?s1))
+                    (at start (pole_available ?p))
+                    (over all (pole_region ?p ?s1))
+                    (over all (pole_region ?p ?s2))
+                    (over all (forward_slot_connection ?s1 ?s2))
+(over all (forward_slot_connection ?s2 ?s3))
+(over all (forward_slot_connection ?s3 ?s4))
+(over all (forward_slot_connection ?s4 ?s5))
+
+                    (at start (slot_have_pole ?s1))
+                    (over all (not (slot_have_pole ?s2)))
+(over all (not (slot_have_pole ?s3)))
+(over all (not (slot_have_pole ?s4)))
+(over all (not (slot_have_pole ?s5)))
+
+                )
+                :effect (and
+                    (at start(not (pole_position ?p ?s1)))
+                    (at end(pole_position ?p ?s2))
+                    (at start (slot_have_pole ?s1))(at start (slot_have_pole ?s2))(at start (slot_have_pole ?s3))(at start (slot_have_pole ?s4))(at start (slot_have_pole ?s5))
+                    (at end (not (slot_have_pole ?s1)))
+(at end (not (slot_have_pole ?s3)))
+(at end (not (slot_have_pole ?s4)))
+(at end (not (slot_have_pole ?s5)))
+
+                    (at end(slot_have_pole ?s2))
+                    (at start(not (pole_available ?p)))
+                    (at end(pole_available ?p))
+                )
+            )
+            
+                (:durative-action Move-Pole-forward-3
+                :parameters (?p - pole ?s1 - slot ?s2 - slot ?s3 - slot ?s4 - slot )
+                :duration (= ?duration (pole_moving_duration_each_slot))
+                :condition (and
+                    (over all(border_slot ?s4))
+
+                    (over all (pole_start_moving ?p))
+                    (at start (pole_position ?p ?s1))
+                    (at start (pole_available ?p))
+                    (over all (pole_region ?p ?s1))
+                    (over all (pole_region ?p ?s2))
+                    (over all (forward_slot_connection ?s1 ?s2))
+(over all (forward_slot_connection ?s2 ?s3))
+(over all (forward_slot_connection ?s3 ?s4))
+
+                    (at start (slot_have_pole ?s1))
+                    (over all (not (slot_have_pole ?s2)))
+(over all (not (slot_have_pole ?s3)))
+(over all (not (slot_have_pole ?s4)))
+
+                )
+                :effect (and
+                    (at start(not (pole_position ?p ?s1)))
+                    (at end(pole_position ?p ?s2))
+                    (at start (slot_have_pole ?s1))(at start (slot_have_pole ?s2))(at start (slot_have_pole ?s3))(at start (slot_have_pole ?s4))
+                    (at end (not (slot_have_pole ?s1)))
+(at end (not (slot_have_pole ?s3)))
+(at end (not (slot_have_pole ?s4)))
+
+                    (at end(slot_have_pole ?s2))
+                    (at start(not (pole_available ?p)))
+                    (at end(pole_available ?p))
+                )
+            )
+            
+                (:durative-action Move-Pole-forward-4
+                :parameters (?p - pole ?s1 - slot ?s2 - slot ?s3 - slot )
+                :duration (= ?duration (pole_moving_duration_each_slot))
+                :condition (and
+                    (over all(border_slot ?s3))
+
+                    (over all (pole_start_moving ?p))
+                    (at start (pole_position ?p ?s1))
+                    (at start (pole_available ?p))
+                    (over all (pole_region ?p ?s1))
+                    (over all (pole_region ?p ?s2))
+                    (over all (forward_slot_connection ?s1 ?s2))
+(over all (forward_slot_connection ?s2 ?s3))
+
+                    (at start (slot_have_pole ?s1))
+                    (over all (not (slot_have_pole ?s2)))
+(over all (not (slot_have_pole ?s3)))
+
+                )
+                :effect (and
+                    (at start(not (pole_position ?p ?s1)))
+                    (at end(pole_position ?p ?s2))
+                    (at start (slot_have_pole ?s1))(at start (slot_have_pole ?s2))(at start (slot_have_pole ?s3))
+                    (at end (not (slot_have_pole ?s1)))
+(at end (not (slot_have_pole ?s3)))
+
+                    (at end(slot_have_pole ?s2))
+                    (at start(not (pole_available ?p)))
+                    (at end(pole_available ?p))
+                )
+            )
+            
+                (:durative-action Move-Pole-forward-5
+                :parameters (?p - pole ?s1 - slot ?s2 - slot )
+                :duration (= ?duration (pole_moving_duration_each_slot))
+                :condition (and
+                    (over all(border_slot ?s2))
+
                     (over all (pole_start_moving ?p))
                     (at start (pole_position ?p ?s1))
                     (at start (pole_available ?p))
@@ -97,10 +243,156 @@
             )
             
                 (:durative-action Move-Pole-inverse-1
-                :parameters (?p - pole ?s1 - slot ?s2 - slot )
+                :parameters (?p - pole ?s1 - slot ?s2 - slot ?s3 - slot ?s4 - slot ?s5 - slot ?s6 - slot )
                 :duration (= ?duration (pole_moving_duration_each_slot))
                 :condition (and
                     
+                    (over all (pole_start_moving ?p))
+                    (at start (pole_position ?p ?s1))
+                    (at start (pole_available ?p))
+                    (over all (pole_region ?p ?s1))
+                    (over all (pole_region ?p ?s2))
+                    (over all (inverse_slot_connection ?s1 ?s2))
+(over all (inverse_slot_connection ?s2 ?s3))
+(over all (inverse_slot_connection ?s3 ?s4))
+(over all (inverse_slot_connection ?s4 ?s5))
+(over all (inverse_slot_connection ?s5 ?s6))
+
+                    (at start (slot_have_pole ?s1))
+                    (over all (not (slot_have_pole ?s2)))
+(over all (not (slot_have_pole ?s3)))
+(over all (not (slot_have_pole ?s4)))
+(over all (not (slot_have_pole ?s5)))
+(over all (not (slot_have_pole ?s6)))
+
+                )
+                :effect (and
+                    (at start(not (pole_position ?p ?s1)))
+                    (at end(pole_position ?p ?s2))
+                    (at start (slot_have_pole ?s1))(at start (slot_have_pole ?s2))(at start (slot_have_pole ?s3))(at start (slot_have_pole ?s4))(at start (slot_have_pole ?s5))(at start (slot_have_pole ?s6))
+                    (at end (not (slot_have_pole ?s1)))
+(at end (not (slot_have_pole ?s3)))
+(at end (not (slot_have_pole ?s4)))
+(at end (not (slot_have_pole ?s5)))
+(at end (not (slot_have_pole ?s6)))
+
+                    (at end(slot_have_pole ?s2))
+                    (at start(not (pole_available ?p)))
+                    (at end(pole_available ?p))
+                )
+            )
+            
+                (:durative-action Move-Pole-inverse-2
+                :parameters (?p - pole ?s1 - slot ?s2 - slot ?s3 - slot ?s4 - slot ?s5 - slot )
+                :duration (= ?duration (pole_moving_duration_each_slot))
+                :condition (and
+                    (over all(border_slot ?s5))
+
+                    (over all (pole_start_moving ?p))
+                    (at start (pole_position ?p ?s1))
+                    (at start (pole_available ?p))
+                    (over all (pole_region ?p ?s1))
+                    (over all (pole_region ?p ?s2))
+                    (over all (inverse_slot_connection ?s1 ?s2))
+(over all (inverse_slot_connection ?s2 ?s3))
+(over all (inverse_slot_connection ?s3 ?s4))
+(over all (inverse_slot_connection ?s4 ?s5))
+
+                    (at start (slot_have_pole ?s1))
+                    (over all (not (slot_have_pole ?s2)))
+(over all (not (slot_have_pole ?s3)))
+(over all (not (slot_have_pole ?s4)))
+(over all (not (slot_have_pole ?s5)))
+
+                )
+                :effect (and
+                    (at start(not (pole_position ?p ?s1)))
+                    (at end(pole_position ?p ?s2))
+                    (at start (slot_have_pole ?s1))(at start (slot_have_pole ?s2))(at start (slot_have_pole ?s3))(at start (slot_have_pole ?s4))(at start (slot_have_pole ?s5))
+                    (at end (not (slot_have_pole ?s1)))
+(at end (not (slot_have_pole ?s3)))
+(at end (not (slot_have_pole ?s4)))
+(at end (not (slot_have_pole ?s5)))
+
+                    (at end(slot_have_pole ?s2))
+                    (at start(not (pole_available ?p)))
+                    (at end(pole_available ?p))
+                )
+            )
+            
+                (:durative-action Move-Pole-inverse-3
+                :parameters (?p - pole ?s1 - slot ?s2 - slot ?s3 - slot ?s4 - slot )
+                :duration (= ?duration (pole_moving_duration_each_slot))
+                :condition (and
+                    (over all(border_slot ?s4))
+
+                    (over all (pole_start_moving ?p))
+                    (at start (pole_position ?p ?s1))
+                    (at start (pole_available ?p))
+                    (over all (pole_region ?p ?s1))
+                    (over all (pole_region ?p ?s2))
+                    (over all (inverse_slot_connection ?s1 ?s2))
+(over all (inverse_slot_connection ?s2 ?s3))
+(over all (inverse_slot_connection ?s3 ?s4))
+
+                    (at start (slot_have_pole ?s1))
+                    (over all (not (slot_have_pole ?s2)))
+(over all (not (slot_have_pole ?s3)))
+(over all (not (slot_have_pole ?s4)))
+
+                )
+                :effect (and
+                    (at start(not (pole_position ?p ?s1)))
+                    (at end(pole_position ?p ?s2))
+                    (at start (slot_have_pole ?s1))(at start (slot_have_pole ?s2))(at start (slot_have_pole ?s3))(at start (slot_have_pole ?s4))
+                    (at end (not (slot_have_pole ?s1)))
+(at end (not (slot_have_pole ?s3)))
+(at end (not (slot_have_pole ?s4)))
+
+                    (at end(slot_have_pole ?s2))
+                    (at start(not (pole_available ?p)))
+                    (at end(pole_available ?p))
+                )
+            )
+            
+                (:durative-action Move-Pole-inverse-4
+                :parameters (?p - pole ?s1 - slot ?s2 - slot ?s3 - slot )
+                :duration (= ?duration (pole_moving_duration_each_slot))
+                :condition (and
+                    (over all(border_slot ?s3))
+
+                    (over all (pole_start_moving ?p))
+                    (at start (pole_position ?p ?s1))
+                    (at start (pole_available ?p))
+                    (over all (pole_region ?p ?s1))
+                    (over all (pole_region ?p ?s2))
+                    (over all (inverse_slot_connection ?s1 ?s2))
+(over all (inverse_slot_connection ?s2 ?s3))
+
+                    (at start (slot_have_pole ?s1))
+                    (over all (not (slot_have_pole ?s2)))
+(over all (not (slot_have_pole ?s3)))
+
+                )
+                :effect (and
+                    (at start(not (pole_position ?p ?s1)))
+                    (at end(pole_position ?p ?s2))
+                    (at start (slot_have_pole ?s1))(at start (slot_have_pole ?s2))(at start (slot_have_pole ?s3))
+                    (at end (not (slot_have_pole ?s1)))
+(at end (not (slot_have_pole ?s3)))
+
+                    (at end(slot_have_pole ?s2))
+                    (at start(not (pole_available ?p)))
+                    (at end(pole_available ?p))
+                )
+            )
+            
+                (:durative-action Move-Pole-inverse-5
+                :parameters (?p - pole ?s1 - slot ?s2 - slot )
+                :duration (= ?duration (pole_moving_duration_each_slot))
+                :condition (and
+                    (over all(border_slot ?s2))
+
                     (over all (pole_start_moving ?p))
                     (at start (pole_position ?p ?s1))
                     (at start (pole_available ?p))

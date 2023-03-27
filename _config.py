@@ -13,16 +13,17 @@ import ipdb
 # IS_CYCLE = False        # 流水线是否是循环的
 # HOIST_REGION = [range(1,16), range(14, 30), range(28, 40)] #天车的区间
 
-TABLE_NAME = 'temp4'
+TABLE_NAME = 'processedittable'
 
 BLANKING_SLOT = [1]    # 下料槽位    
 STOCKING_SLOT = [1]     # 上料槽位
-BORDER_SLOT = [1, 3, 10, 12]   # 边界槽位
-HOIST_INTERVAL = 0      # 天车间隔
+BORDER_SLOT = [1, 39]   # 边界槽位
+HOIST_INTERVAL = 4      # 天车间隔
 
 IS_CYCLE = False        # 流水线是否是循环的
-HOIST_REGION = [range(1,4), range(10, 13)] #天车的区间
-GEAR_REGION = [(3, 10), (12, 1)]
+HOIST_REGION = [range(1,16), range(14, 30), range(28, 40)] #天车的区间
+
+
 
 HOIST_MOVE_DURATION = 1
 HOIST_RISE_DURATION = 10
@@ -43,14 +44,23 @@ line_path = os.path.join(data_path, '211')
 
 # 读取产线状态
 # 读取槽位
-slots = [1,2,3,10, 11, 12]
-empty_slots = [1,2,3,10,11,12]
+while True:
+    slots = plcApi.get_tank_status()
+    if slots:
+        try:
+            empty_slots = [k for k, v in slots.items() if v == 1]
+            slots = range(empty_slots[0], empty_slots[-1] + 1) 
+        except:
+            continue
+        break
+
 # 读取天车位置
-poles = [1, 2]
-pole_positions = [1, 10]
-# 交换车
-gears = [1, 2]
-gear_positions = [3, 12]
+while True:
+    pole_positions = plcApi.get_hoist_position()
+    if pole_positions:
+        break
+poles = [k for k, v in pole_positions.items() if v > 0 and k > 0]
+pole_positions = [v for k, v in pole_positions.items() if v > 0 and k > 0]
 
 
 domain_config = {
@@ -73,8 +83,8 @@ slot_config = {
     'stocking_slot': STOCKING_SLOT,
     'border_slot': BORDER_SLOT,
     'disable_slot': [],
-    'gears_begin_slot': [3, 12],
-    'gears_end_slot': [10, 1]
+    'gears_begin_slot': [],
+    'gears_end_slot': []
 }
 
 pole_config = {
@@ -91,10 +101,10 @@ pole_config = {
 }
 
 gear_config = {
-    'gears':gears,
-    'gears_region': GEAR_REGION,
-    'gears_position': gear_positions,
-    'gear_moving_duration': GEAR_MOVE_DURATION,
+    'gears': [],
+    'gears_region': [],
+    'gears_position': [],
+    'gear_moving_duration': 16,
 }
 
 db_config = {
